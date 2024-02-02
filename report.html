@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Hello world!</title>
+  </head>
+  <body>
+    <h1>{{title}}</h1>
+    <table>
+      <tr>
+        <th>_id</th>
+        <th>stationId</th>
+        <th>orderManagerId</th>
+        <th>driverId</th>
+        <th>attachments</th>
+        <th>companyId</th>
+        <th>vendorId</th>
+        <th>fuel_type</th>
+        <th>fuel_value</th>
+        <th>fuel_recieved</th>
+        <th>fuel_price</th>
+        <th>to</th>
+        <th>from</th>
+      </tr>
+      {{#each data}}
+      <tr>
+        <td>{{this._id}}</td>
+        <td>{{this.stationId}}</td>
+        <td>{{this.orderManagerId}}</td>
+        <td>{{this.driverId}}</td>
+        <td>{{this.attachments}}</td>
+        <td>{{this.companyId}}</td>
+        <td>{{this.vendorI}}d</td>
+        <td>{{this.fuel_type}}</td>
+        <td>{{this.fuel_valu}}e</td>
+        <td>{{this.fuel_recieved}}</td>
+        <td>{{this.fuel_price}}</td>
+        <td>{{this.to}}</td>
+        <td>{{this.from}}</td>
+      </tr>
+      <br />
+      {{/each}}
+      </table>
+  </body>
+</html>
