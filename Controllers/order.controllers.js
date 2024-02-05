@@ -64,10 +64,12 @@ const createOrder = async (req, res) => {
       error: { message: "Required fields are missing!" },
     });
   if (!Array.isArray(stations))
-    return res.status(200).json({
-      success: false,
-      error: { message: "stations field should be an array of object!" },
-    });
+{
+  return res.status(200).json({
+    success: false,
+    error: { message: "stations field should be an array of object!" },
+  });
+}
   if (typeof from != "object")
     return res.status(200).json({
       success: false,

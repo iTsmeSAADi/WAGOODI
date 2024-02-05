@@ -18,6 +18,7 @@ const OrderSchema = new mongoose.Schema({
       fuel_recieved: { type: Number },
     },
   ],
+  orderNumber: {type: Number, default: Math.floor(Math.random() * 90000) + 1000},
   driverId: { type: mongoose.Types.ObjectId, ref: "account" },
   attachments: [
     {
