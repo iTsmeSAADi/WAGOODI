@@ -131,9 +131,6 @@ const createStation = async (req, res) => {
 const updateStation = async (req, res) => {
   const { stationId, updateData } = req.body;
   try {
-    delete updateData?._id;
-    delete updateData?.companyId;
-    delete updateData?.fuels;
     if (!stationId)
       return res
         .status(200)
@@ -142,23 +139,31 @@ const updateStation = async (req, res) => {
       return res
         .status(200)
         .json({ success: false, error: { msg: "updateData is undefined!" } });
+
+    // Ensure 'favorite' is explicitly checked in updateData
+    const { favorite, ...restUpdateData } = updateData;
+
     const updatedStation = await Station.findByIdAndUpdate(stationId, {
-      ...updateData,
+      ...restUpdateData,  // Spread the rest of the updateData
+      favorite,          // Set the 'favorite' field
     });
+
     if (!updatedStation)
       return res.status(200).json({
         success: false,
         error: { msg: "No such station with id found" },
       });
+
     res.status(200).json({
       success: true,
-      data: { msg: `${updatedStation.name} Station is updated!` },
+      data: { msg: `${updatedStation.name} Station is updated!`, favorite: updateData.favorite },
     });
   } catch (error) {
     console.log(error);
     res.status(400).json({ success: false, error: error.message });
   }
 };
+
 
 const listStations = async (req, res) => {
   try {
