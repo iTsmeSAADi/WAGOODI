@@ -50,19 +50,7 @@ const createOrder = async (req, res) => {
   } = req.body;
   const attachment = req?.file?.buffer;
   const mimetype = req?.file?.mimetype;
-  if (
-    !stations ||
-    !orderManagerId ||
-    !companyId ||
-    fuel_type == undefined ||
-    !fuel_value ||
-    !fuel_price ||
-    !from
-  )
-    return res.status(200).json({
-      success: false,
-      error: { message: "Required fields are missing!" },
-    });
+
   if (!Array.isArray(stations))
   return res.status(200).json({
     success: false,
