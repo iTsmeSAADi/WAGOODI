@@ -50,13 +50,24 @@ const createOrder = async (req, res) => {
   } = req.body;
   const attachment = req?.file?.buffer;
   const mimetype = req?.file?.mimetype;
-
+  if (
+    !stations ||
+    !orderManagerId ||
+    !companyId ||
+    fuel_type == undefined ||
+    !fuel_value ||
+    !fuel_price ||
+    !from
+  )
+    return res.status(200).json({
+      success: false,
+      error: { message: "Required fields are missing!" },
+    });
   if (!Array.isArray(stations))
   return res.status(200).json({
     success: false,
-    error: { message: "stations field should be an array of object!", "Data you sent": stations, "Type of your data": typeof(stations) },
+    error: { message: "stations field should be an array of object!" },
   });
-
   if (typeof from != "object")
     return res.status(200).json({
       success: false,
@@ -76,7 +87,7 @@ const createOrder = async (req, res) => {
       success: false,
       error: { message: "Attachment Of Order Receipt File Is Undefined!" },
     });
-  const stationsCheck = await stations.every(
+  const stationsCheck = await stations.map(
     (station) => station?.id && station?.address && station?.status
   );
   if (!stationsCheck)
@@ -87,6 +98,7 @@ const createOrder = async (req, res) => {
           "stations is not properly defined! Must contain id, address, and status.",
       },
     });
+
   if (driverId && !location)
     return res.status(200).json({
       success: false,
