@@ -61,13 +61,20 @@ const signUpCompany = async (req, res) => {
 
 const updateCompany = async (req, res) => {
   const { companyId, payload } = req.body;
-  
 
   // Parsing payload if it's a stringified JSON
-  const parsedPayload =JSON.parse(payload);
-  res.status(200).json({"data": parsedPayload})
+  let parsedPayload;
+  try {
+    parsedPayload = JSON.parse(payload);
+  } catch (error) {
+    return res
+      .status(400)
+      .json({ success: false, error: { msg: "Invalid JSON in payload" } });
+  }
 
+  res.status(200).json({ data: parsedPayload });
 };
+
 
 
 const getCompany = async (req, res) => {
