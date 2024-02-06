@@ -50,6 +50,7 @@ const createOrder = async (req, res) => {
   } = req.body;
 
   console.log('req.body', req.body)
+  console.log('req.file', req.file)
   const attachment = req?.file?.buffer;
   const mimetype = req?.file?.mimetype;
   if (
