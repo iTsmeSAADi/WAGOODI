@@ -64,7 +64,7 @@ const updateCompany = async (req, res) => {
   
 
   // Parsing payload if it's a stringified JSON
-  const parsedPayload = typeof payload === 'string' ? JSON.parse(payload) : payload;
+  const parsedPayload =JSON.parse(payload);
   res.status(200).json({"data": parsedPayload})
 
 };
