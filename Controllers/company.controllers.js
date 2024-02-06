@@ -61,41 +61,51 @@ const signUpCompany = async (req, res) => {
 
 const updateCompany = async (req, res) => {
   const { companyId, payload } = req.body;
+  
+  // Parsing payload if it's a stringified JSON
+  const parsedPayload = typeof payload === 'string' ? JSON.parse(payload) : payload;
+
   if (req.file) {
     const imageUrl = await uploadCompanyFile(
       `${companyId}-pf`,
       req.file.buffer
     );
-    payload.imageUrl = imageUrl;
+    parsedPayload.imageUrl = imageUrl;
   }
-  delete payload?.companyId?._id;
-  delete payload?._id;
-  if (!companyId)
+  delete parsedPayload?.companyId?._id;
+  delete parsedPayload?._id;
+
+  if (!companyId) {
     return res
       .status(200)
       .json({ success: false, error: { msg: "companyId is undefined!" } });
+  }
+
   try {
     let company = await Company.findOne({
       _id: new mongoose.Types.ObjectId(companyId),
     });
-    if (!company)
+
+    if (!company) {
       return res.status(200).json({
         success: false,
         error: { msg: "Company with such id was not found!" },
       });
-    company = { ...company, ...payload };
+    }
+
+    company = { ...company, ...parsedPayload };
     await company.save();
-    res.status({
+
+    res.status(200).json({
       success: true,
       data: { data: company, msg: "Company Successfully Updated!" },
     });
   } catch (error) {
     console.log(error);
-    res
-      .status(400)
-      .json({ success: false, error: { msg: error.msg || error } });
+    res.status(400).json({ success: false, error: { msg: error.msg || error } });
   }
 };
+
 
 const getCompany = async (req, res) => {
   const { companyId } = req.params;
