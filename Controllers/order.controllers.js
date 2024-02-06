@@ -33,159 +33,189 @@ const stationOrders = async (req, res) => {
 };
 
 const createOrder = async (req, res) => {
-  const {
-    stations,
-    orderManagerId,
-    companyId,
-    fuel_type,
-    fuel_value,
-    fuel_price,
-    fuel_id,
-    driverId,
-    location,
-    from,
-    reciept_number,
-    expected_arrival,
-    driverTip
-  } = req.body;
-
-  console.log('req.body', req.body)
-  console.log('req.file', req.file)
-  console.log('req.headers', req.headers)
-  const attachment = req?.file?.buffer;
-  const mimetype = req?.file?.mimetype;
-  if (
-    !stations ||
-    !orderManagerId ||
-    !companyId ||
-    fuel_type == undefined ||
-    !fuel_value ||
-    !fuel_price ||
-    !from
-  )
-    return res.status(200).json({
-      success: false,
-      error: { message: "Required fields are missing!" },
-    });
-  if (!Array.isArray(stations))
-  return res.status(200).json({
-    success: false,
-    error: { message: "stations field should be an array of object!" },
-  });
-  if (typeof from != "object")
-    return res.status(200).json({
-      success: false,
-      error: { message: "from field should be an object!" },
-    });
-  if (
-    !from.option ||
-    (from.option == 0 && !from.vendorId) ||
-    (from.option == 1 && !from.stationId)
-  )
-    return res.status(400).json({
-      success: false,
-      error: { message: "from field is missing required fields!" },
-    });
-  if (from.option == 0 && !attachment)
-    return res.status(200).json({
-      success: false,
-      error: { message: "Attachment Of Order Receipt File Is Undefined!" },
-    });
-  const stationsCheck = await stations.map(
-    (station) => station?.id && station?.address && station?.status
-  );
-  if (!stationsCheck)
-    return res.status(200).json({
-      success: false,
-      error: {
-        message:
-          "stations is not properly defined! Must contain id, address, and status.",
-      },
-    });
-
-  if (driverId && !location)
-    return res.status(200).json({
-      success: false,
-      error: {
-        msg: "for driver to be assigned the current location of driver should be specified!",
-      },
-    });
-    const io = req?.app?.io
   try {
+    const {
+      stations,
+      orderManagerId,
+      companyId,
+      fuel_type,
+      fuel_value,
+      fuel_price,
+      fuel_id,
+      driverId,
+      location,
+      from,
+      reciept_number,
+      expected_arrival,
+      driverTip,
+    } = req.body;
+
+    console.log('req.body', req.body);
+    console.log('req.file', req.file);
+    console.log('req.headers', req.headers);
+
+    const attachment = req?.file?.buffer;
+    const mimetype = req?.file?.mimetype;
+
+    if (
+      !stations ||
+      !orderManagerId ||
+      !companyId ||
+      fuel_type == undefined ||
+      !fuel_value ||
+      !fuel_price ||
+      !from
+    )
+      return res.status(200).json({
+        success: false,
+        error: { message: "Required fields are missing!" },
+      });
+
+    if (!Array.isArray(stations))
+      return res.status(200).json({
+        success: false,
+        error: { message: "Stations field should be an array of objects!" },
+      });
+
+    if (typeof from !== "object")
+      return res.status(200).json({
+        success: false,
+        error: { message: "From field should be an object!" },
+      });
+
+    if (
+      !from.option ||
+      (from.option === 0 && !from.vendorId) ||
+      (from.option === 1 && !from.stationId)
+    )
+      return res.status(400).json({
+        success: false,
+        error: { message: "From field is missing required fields!" },
+      });
+
+    if (from.option === 0 && !attachment)
+      return res.status(200).json({
+        success: false,
+        error: { message: "Attachment of order receipt file is undefined!" },
+      });
+
+    const stationsCheck = stations.every(
+      (station) => station?.id && station?.address && station?.status
+    );
+
+    if (!stationsCheck)
+      return res.status(200).json({
+        success: false,
+        error: {
+          message:
+            "Stations are not properly defined! Must contain id, address, and status.",
+        },
+      });
+
+    if (driverId && !location)
+      return res.status(200).json({
+        success: false,
+        error: {
+          msg: "For a driver to be assigned, the current location of the driver should be specified!",
+        },
+      });
+
+    const io = req?.app?.io;
+
     let to = [];
     let stationNameOrderError = [];
+
     await Promise.all(
       stations.map(async (selectedStation, index) => {
         const station = await Station.findById(selectedStation.id).populate(
           "fuels"
         );
+
         if (!station)
           return res.status(200).json({
             success: false,
             error: { message: "No such station found!" },
           });
+
         if (!station.active)
-          return createError(res, 400, `station ${station.name} is inactive!`);
+          return createError(res, 400, `Station ${station.name} is inactive!`);
+
         stations[index].address = station.address;
         to.push(station.address);
+
         const prevOrder = await Order.findOne({
           stations: { $elemMatch: { id: station.id } },
           fuel_type,
         });
-        const status = prevOrder?.stations.find(
-          (station) => station.id === selectedStation.id
-        )?.status;
-        const fuel = station.fuels.find((fuel) => fuel.type == fuel_type);
-        const prevOrderFlag = prevOrder?.createdAt <= 86400 && status === 4;
+
+        const status =
+          prevOrder?.stations.find(
+            (station) => station.id === selectedStation.id
+          )?.status;
+
+        const fuel = station.fuels.find((fuel) => fuel.type === fuel_type);
+        const prevOrderFlag =
+          prevOrder?.createdAt <= 86400 && status === 4;
+
         if (prevOrderFlag) {
           stationNameOrderError.push(station.name);
         }
-        if (!prevOrderFlag && fuel?.value == 0) {
-          const emptyTankFuel = await EmptyTankModel.findOne(
+
+        if (!prevOrderFlag && fuel?.value === 0) {
+          let emptyTankFuel = await EmptyTankModel.findOne(
             { stationId: selectedStation.id, duration: null },
             null,
             { sort: { createdAt: -1 } }
           );
+
           if (emptyTankFuel) {
             emptyTankFuel = {
               ...emptyTankFuel,
-              duration: Math.floor(Date.now() / 1000) - emptyTankFuel.createdAt,
+              duration:
+                Math.floor(Date.now() / 1000) - emptyTankFuel.createdAt,
             };
             await emptyTankFuel.save();
           }
         }
       })
     );
+
     if (stationNameOrderError.length > 0)
       return res.status(400).json({
         success: false,
         error: {
-          msg: `Order for fuel type already placed for stations : ${stationNameOrderError.join(
+          msg: `Order for fuel type already placed for stations: ${stationNameOrderError.join(
             ", "
-          )} `,
+          )}`,
         },
       });
 
     const orderManager = await Account.findById(orderManagerId);
+
     if (!orderManager)
       return res.status(200).json({
         success: false,
-        error: { message: "Not such orderManager found!" },
+        error: { message: "No such orderManager found!" },
       });
+
     if (req?.user?.companyId._id != orderManager.companyId)
       return res.status(200).json({
         success: false,
-        error: { message: "orderManager is not of a company specified!" },
+        error: { message: "OrderManager is not of the specified company!" },
       });
+
     let attachmentName;
     let attachmentUrl;
-    if (from.option == 0) {
+
+    if (from.option === 0) {
       const vendor = await Vendor.findById(from?.vendorId);
+
       if (!vendor)
         return res.status(200).json({
           success: false,
-          error: { message: "Not such Vendor found!" },
+          error: { message: "No such vendor found!" },
         });
+
       from.address = vendor.address;
       attachmentName = "order-receipt";
       attachmentUrl = await firebase_methods.uploadOrderAttachment(
@@ -196,34 +226,42 @@ const createOrder = async (req, res) => {
       );
     }
 
-    if (from.option == 1) {
+    if (from.option === 1) {
       const station = await Station.findById(from.stationId);
+
       if (!station)
         return res.status(400).json({
           success: false,
-          error: { message: "Not such station found!" },
+          error: { message: "No such station found!" },
         });
+
       if (!fuel_id)
         return res.status(400).json({
           success: false,
           error: { message: "fuel_id is required for a station!" },
         });
+
       const fuelIdMatch = station.fuels.includes(fuel_id);
+
       if (!fuelIdMatch)
         return res.status(400).json({
           success: false,
-          error: { message: "station do not contain such id for a fuel!" },
+          error: { message: "Station does not contain such id for a fuel!" },
         });
+
       from.address = station.address;
+
       if (driverId) {
         const driverTruck = await TruckModel.findOne({ driverId });
+
         if (fuel_value > driverTruck.capacity)
           return createError(
             res,
             400,
-            "driver truck capacity is lower then the fuel value!"
+            "Driver truck capacity is lower than the fuel value!"
           );
       }
+
       await Fuel.findOneAndUpdate(
         { _id: fuel_id },
         { $inc: { value: fuel_value * -1 } }
@@ -231,8 +269,10 @@ const createOrder = async (req, res) => {
     }
 
     const attachmentObj =
-      from.option == 0 ? [{ name: attachmentName, url: attachmentUrl }] : [];
+      from.option === 0 ? [{ name: attachmentName, url: attachmentUrl }] : [];
+
     stations[0].status = 1;
+
     const order = await new Order({
       stations,
       orderManagerId,
@@ -246,10 +286,11 @@ const createOrder = async (req, res) => {
       reciept_number,
       expected_arrival,
       startedAt: driverId ? Math.floor(Date.now() / 1000) : null,
-      driverTip
+      driverTip,
     }).save();
+
     res.status(200).json({ success: true, data: order });
-    res.end();
+
     if (!driverId) {
       const notificationDesc = `Accept Or Reject Order ${order._id}`;
       const companyDriversNotification = await new Notification({
@@ -258,12 +299,15 @@ const createOrder = async (req, res) => {
         description: notificationDesc,
         stationId: stations[0].id,
       }).save();
-      console.log("IO ", io)
+
+      console.log("IO ", io);
+
       io.to(`/company/drivers-${companyId}`).emit("notification-message", {
         notification: companyDriversNotification,
         order: order,
       });
     }
+
     const notificationsCreation = await Promise.all(
       stations.map(async ({ id: stationId, name: stationName }) => {
         const notificationDesc = `${order._id} has been generated for ${stationName} Station!`;
@@ -275,19 +319,24 @@ const createOrder = async (req, res) => {
           stationId,
           driverId,
         }).save();
+
         io.to("/admin")
-          .to("/companyAdmin-" + companyId)
-          .to("/orderManager-" + companyId)
-          .to("/stationManager-" + stationId)
+          .to(`/companyAdmin-${companyId}`)
+          .to(`/orderManager-${companyId}`)
+          .to(`/stationManager-${stationId}`)
           .emit("notification-message", notification);
+
         if (!driverId) return;
-        io.to("/companyDriver-" + driverId).emit(
+
+        io.to(`/companyDriver-${driverId}`).emit(
           "notification-message",
           notification
         );
       })
     );
+
     if (!driverId) return;
+
     let notificationDesc = `${order._id} has been assigned for ${stations[0].id} Station! Order destination is ${stations[0].address} `;
     const driverNotification = await new Notification({
       orderId: Order._id,
@@ -296,7 +345,9 @@ const createOrder = async (req, res) => {
       stationId: stations[0].id,
       accountId: driverId,
     }).save();
-    io.to("/companyDriver-" + driverId).emit(driverNotification);
+
+    io.to(`/companyDriver-${driverId}`).emit(driverNotification);
+
     const tracking = await Tracking({
       driverId,
       orderId: order._id,
@@ -307,6 +358,8 @@ const createOrder = async (req, res) => {
     res.status(400).json({ success: false, error: error.message });
   }
 };
+
+
 
 const queryOrder = async (req, res) => {
   const {
