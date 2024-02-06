@@ -14,6 +14,7 @@ router.patch("/change-password", auth.verifyUserCookie, auth.verifyUser, auth.ch
 router.patch("/update/", auth.verifyUserCookie, auth.verifySuperAdmin, auth.updateUser)
 router.post("/list/", auth.verifyUserCookie, auth.verifyAdminAndCompanyAdmin, auth.listAllUsers)
 router.post("/", auth.verifyUserCookie, auth.verifySuperAdmin, auth.getUser)
+router.get("/getAllDrivers", auth.verifyUserCookie, auth.getAllDrivers)
 router.get("/check-token", auth.verifyUserCookie, auth.accessTokenExpired)
 
 module.exports = router;

@@ -289,6 +289,25 @@ const getUser = async (req, res) => {
   }
 };
 
+const getAllDrivers = async (req, res) => {
+  try {
+    const drivers = await Account.find({ role: 4 });
+
+    if (drivers.length === 0) {
+      return res.status(200).json({
+        success: false,
+        error: { msg: "No drivers found!" },
+      });
+    }
+
+    res.status(200).json({ success: true, data: drivers });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ success: false, error: { msg: error.message } });
+  }
+};
+
+
 const updateUser = async (req, res) => {
   const { userId, payload = {} } = req.body;
   if (!userId)
@@ -647,4 +666,5 @@ module.exports = {
   verifyActiveStation,
   verifyAdminAndStationManager,
   verifyIsLoggedIn,
+  getAllDrivers
 };
