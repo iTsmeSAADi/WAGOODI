@@ -69,7 +69,7 @@ const updateCompany = async (req, res) => {
   } catch (error) {
     return res
       .status(400)
-      .json({ success: false, error: { msg: "Invalid JSON in payload" } });
+      .json({ success: false, error: { msg: "Invalid JSON in payload", data: parsedPayload } });
   }
 
   res.status(200).json({ data: parsedPayload });
