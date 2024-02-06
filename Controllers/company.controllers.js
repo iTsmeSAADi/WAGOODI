@@ -62,8 +62,11 @@ const signUpCompany = async (req, res) => {
 const updateCompany = async (req, res) => {
   const { companyId, payload } = req.body;
   
+
   // Parsing payload if it's a stringified JSON
   const parsedPayload = typeof payload === 'string' ? JSON.parse(payload) : payload;
+  res.status(200).json({"data": parsedPayload})
+  return
 
   if (req.file) {
     const imageUrl = await uploadCompanyFile(
