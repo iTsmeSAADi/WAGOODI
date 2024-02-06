@@ -55,7 +55,7 @@ const OrderSchema = new mongoose.Schema({
     },
     stationId: { type: mongoose.Types.ObjectId, ref: "stations" },
     vendorId: { type: mongoose.Types.ObjectId, ref: "vendors" },
-    address: {type: String, required: true}
+    address: {type: String, required: false}
   },
   createdAt: { type: Number, default: Math.floor(Date.now() / 1000) },
   arrival_date: { type: Number },
