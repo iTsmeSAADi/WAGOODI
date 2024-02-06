@@ -291,7 +291,7 @@ const getUser = async (req, res) => {
 
 const getAllDrivers = async (req, res) => {
   try {
-    const drivers = await Account.find({ role: 4 });
+    const drivers = await Account.find({ role: 4 }).select('-password');
 
     if (drivers.length === 0) {
       return res.status(200).json({
@@ -306,6 +306,7 @@ const getAllDrivers = async (req, res) => {
     res.status(400).json({ success: false, error: { msg: error.message } });
   }
 };
+
 
 
 const updateUser = async (req, res) => {
