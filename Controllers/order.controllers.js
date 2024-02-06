@@ -48,6 +48,8 @@ const createOrder = async (req, res) => {
     expected_arrival,
     driverTip
   } = req.body;
+
+  console.log('req.body', req.body)
   const attachment = req?.file?.buffer;
   const mimetype = req?.file?.mimetype;
   if (
