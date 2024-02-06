@@ -1,0 +1,69 @@
+orderManagerId: '652948ce3deab92bdb05f2c6',
+
+companyId: '6524f10fa6019b64a812b09c',
+
+fuel_type: '0',
+
+fuel_id: '659c3114ba5fdd32155d919e',
+
+fuel_value: '90',
+
+from: [Object: null prototype] {
+
+option: '2',
+
+stationId: '6555eb06174c9fdb4be5d4b1'
+
+},
+
+fuel_price: '25',
+
+stations: [
+
+[Object: null prototype] {
+
+name: 'chorangiZ',
+
+id: '6555eb06174c9fdb4be5d4b1',
+
+address: 'xyz street',
+
+status: '0',
+
+fuel_value: '25'
+
+},
+
+[Object: null prototype] {
+
+name: 'جدة',
+
+id: '659c3114ba5fdd32155d91a0',
+
+address: 'جدة',
+
+status: '0',
+
+fuel_value: '6'
+
+}
+
+]
+
+}
+
+req.file {
+
+fieldname: 'attachment',
+
+originalname: 'cs_fee_slip.jpg',
+
+encoding: '7bit',
+
+mimetype: 'application/octet-stream',
+
+buffer: <Buffer ff d8 ff e0 00 10 4a 46 49 46 00 01 02 01 01 2c 01 2c 00 00 ff e1 2e 21 45 78 69 66 00 00 4d 4d 00 2a 00 00 00 08 00 07 01 12 00 03 00 00 00 01 00 01 ... 1116655 more bytes>,
+
+size: 1116705
+
+}
