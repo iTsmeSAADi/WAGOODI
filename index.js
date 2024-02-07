@@ -116,7 +116,7 @@ app.use((req, res, next) => {
 // we should have cors object specified here,
 
 app.use(function (req, res, next) {
-  console.log(req.originalUrl)
+  console.log("req.originalUrl", req.originalUrl)
   res.header("Access-Control-Allow-Credentials", true);
   res.header(
     "Access-Control-Allow-Headers",
