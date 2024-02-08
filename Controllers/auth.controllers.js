@@ -507,8 +507,7 @@ const verifyCompanyId = async (req, res, next) => {
 };
 
 const verifyStationId = async (req, res, next) => {
-  console.log("stationId", req.user)
-  return
+  console.log("stationId", req.user.stationId)
   try {
     const authorizedStationManager =
       req?.user?.stationId._id &&
