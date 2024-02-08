@@ -5,6 +5,7 @@ const { uploadCompanyFile } = require("../Utils/firebase");
 const { createError, successMessage } = require("../Utils/responseMessage");
 const EmptyTankModel = require("../Models/EmptyTank.schema");
 const { sendMail } = require("../Utils/mail");
+const mongoose = 'mongoose'
 
 const signUpCompany = async (req, res) => {
   const { name, address, phone, email, crn_number, tax_number, password } =
@@ -61,50 +62,53 @@ const signUpCompany = async (req, res) => {
 
 const updateCompany = async (req, res) => {
   const { companyId, payload } = req.body;
-  
+
   // Parsing payload if it's a stringified JSON
-  const parsedPayload = typeof payload === 'string' ? JSON.parse(payload) : payload;
 
   if (req.file) {
     const imageUrl = await uploadCompanyFile(
       `${companyId}-pf`,
       req.file.buffer
     );
-    parsedPayload.imageUrl = imageUrl;
+    payload.imageUrl = imageUrl;
   }
-  delete parsedPayload?.companyId?._id;
-  delete parsedPayload?._id;
+
+  // Remove unwanted properties from payload
+  delete payload?.companyId?._id;
+  delete payload?._id;
 
   if (!companyId) {
     return res
-      .status(200)
+      .status(400)
       .json({ success: false, error: { msg: "companyId is undefined!" } });
   }
 
   try {
-    let company = await Company.findOne({
-      _id: new mongoose.Types.ObjectId(companyId),
-    });
+    let company = await Company.findById(companyId);
 
     if (!company) {
-      return res.status(200).json({
+      return res.status(404).json({
         success: false,
         error: { msg: "Company with such id was not found!" },
       });
     }
 
-    company = { ...company, ...parsedPayload };
+    // Update company properties
+    Object.assign(company, payload);
+
+    // Save the updated company
     await company.save();
 
     res.status(200).json({
       success: true,
-      data: { data: company, msg: "Company Successfully Updated!" },
+      data: { company, msg: "Company Successfully Updated!" },
     });
   } catch (error) {
-    console.log(error);
-    res.status(400).json({ success: false, error: { msg: error.msg || error } });
+    console.error(error);
+    res.status(500).json({ success: false, error: { msg: error.message || error } });
   }
 };
+
 
 
 const getCompany = async (req, res) => {
