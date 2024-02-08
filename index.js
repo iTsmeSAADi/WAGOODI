@@ -60,14 +60,12 @@ paypal.configure({
 app.use(cookieParser());
 app.use(express.json());
 
-// app.use(cors(
-//   { 
-//     origin: true,
-//     credentials: true
-// }
-// ));
-app.use(cors()); // Enable CORS for all routes
-
+app.use(cors(
+  { 
+    origin: true,
+    credentials: true
+}
+));
 
 app.post("/webhook/paypal", async (req, res) => {
   const webhook_body = req.body
