@@ -336,6 +336,36 @@ const updateUser = async (req, res) => {
   }
 };
 
+const deleteUser = async (req, res) => {
+  const { id } = req.params;
+  if (!id) {
+    return res
+      .status(400)
+      .json({ success: false, error: { msg: "userId undefined!" } });
+  }
+
+  try {
+    const user = await Account.findByIdAndDelete(id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: { msg: "No user with such id found!" },
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: { msg: "Successfully Deleted!", data: user },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, error: { msg: error.message } });
+  }
+};
+
+
+
 const changePassword = async (req, res) => {
   const { id, password } = req.body;
   if (!password)
@@ -667,5 +697,6 @@ module.exports = {
   verifyActiveStation,
   verifyAdminAndStationManager,
   verifyIsLoggedIn,
-  getAllDrivers
+  getAllDrivers,
+  deleteUser
 };
