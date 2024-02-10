@@ -31,7 +31,7 @@ const getCompanyVendors = async (req, res) => {
 };
 
 const createVendor = async (req, res) => {
-  const { companyId, name, address, fuels } = req.body;
+  const { companyId, name, address, fuels, latitude, longitude } = req.body;
   if (!companyId)
     return res
       .status(200)
@@ -48,6 +48,11 @@ const createVendor = async (req, res) => {
     return res
       .status(200)
       .json({ success: false, error: { msg: "fuels is undefined!" } });
+      if(!latitude || !longitude)
+        return res
+          .status(200)
+          .json({ success: false, error: { msg: "Both latitude and longitude are required!" } });
+      
   if (!Array.isArray(fuels))
     return res.status(200).json({
       success: false,
@@ -92,46 +97,42 @@ const createVendor = async (req, res) => {
 };
 
 const updateVendor = async (req, res) => {
-  const { id, payload = {}, fuels } = req.body;
-  delete payload?._id;
-  delete payload?.companyId;
-  if (!id)
-    return res
-      .status(200)
-      .json({ success: false, error: { msg: "id is undefined!" } });
-  if (!payload)
-    return res
-      .status(200)
-      .json({ success: false, error: { msg: "payload is undefined!" } });
-  if (fuels) {
-    if (!Array.isArray(fuels))
-      return res.status(200).json({
-        success: false,
-        error: { msg: "fuels must be array of object!" },
-      });
-    const checkFuelArr = await fuels?.filter(
-      ({ type, price_litre }) =>
-        type != undefined &&
-        typeof type === "number" &&
-        price_litre &&
-        typeof price_litre === "number"
-    );
-    if (checkFuelArr.length !== fuels.length)
-      return res.status(200).json({
-        success: false,
-        error: { msg: "fuels array validation checks failed!" },
-      });
-  }
   try {
-    let vendor = await Vendor.findOne({_id: id});
-    if (!vendor)
-      return res.status(200).json({
-        success: false,
-        error: { msg: "Vendor with such id is not found!" },
-      });
+    const { id, payload = {}, fuels } = req.body;
+    let fuelIds;
+
+    if (!id) {
+      return res.status(200).json({ success: false, error: { msg: "id is undefined!" } });
+    }
+
+    if (!payload) {
+      return res.status(200).json({ success: false, error: { msg: "payload is undefined!" } });
+    }
+
     if (fuels) {
-      // for every _id we will check if none found then upsert true
-      const fuelIds = await Promise.all(
+      if (!Array.isArray(fuels)) {
+        return res.status(200).json({
+          success: false,
+          error: { msg: "fuels must be an array of objects!" },
+        });
+      }
+
+      const checkFuelArr = fuels.filter(
+        ({ type, price_litre }) =>
+          type !== undefined &&
+          typeof type === "number" &&
+          price_litre !== undefined &&
+          typeof price_litre === "number"
+      );
+
+      if (checkFuelArr.length !== fuels.length) {
+        return res.status(200).json({
+          success: false,
+          error: { msg: "fuels array validation checks failed!" },
+        });
+      }
+
+      fuelIds = await Promise.all(
         fuels.map(async (fuel) => {
           const { _id, ...fuelData } = fuel;
           const saveFuel = await Fuel.findOneAndUpdate(
@@ -142,22 +143,39 @@ const updateVendor = async (req, res) => {
           return saveFuel._id;
         })
       );
-      payload.fuels = await Promise.all(
-        [...vendor.fuels, ...fuelIds].filter(Boolean)
-      );
     }
-    vendorData = { ...vendor, ...payload };
-    console.log("VendorUpdated Data : ", vendorData)
-    const newVendor = await Vendor.findOneAndUpdate({_id: id}, vendorData);
+
+    const vendor = await Vendor.findOne({ _id: id });
+
+    if (!vendor) {
+      return res.status(200).json({
+        success: false,
+        error: { msg: "Vendor with such id is not found!" },
+      });
+    }
+
+    const vendorData = { ...vendor.toObject(), ...payload };
+
+    console.log("Vendor Data Before Update: ", vendor);
+    console.log("Payload: ", payload);
+    console.log("Fuel Ids: ", fuelIds);
+    console.log("Vendor Data After Update: ", vendorData);
+
+    const newVendor = await Vendor.findOneAndUpdate({ _id: id }, vendorData, { new: true });
+
     res.status(200).json({
       success: true,
       data: { msg: "Vendor Successfully Updated!", data: newVendor },
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     createError(res, 400, error.message);
   }
 };
+
+module.exports = { updateVendor };
+
+
 
 const deleteVendor = async (req, res) => {
   const {id} = req.params;

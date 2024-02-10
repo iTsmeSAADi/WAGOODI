@@ -85,6 +85,11 @@ const createStation = async (req, res) => {
       success: false,
       error: { msg: "Required fields are undefined!" },
     });
+    if(!latitude || !longitude)
+    return res
+      .status(200)
+      .json({ success: false, error: { msg: "Both latitude and longitude are required!" } });
+  
   if (!Array.isArray(fuels))
     return res.status(200).json({
       success: false,
