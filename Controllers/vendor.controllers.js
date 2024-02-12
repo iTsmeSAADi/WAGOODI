@@ -85,6 +85,8 @@ const createVendor = async (req, res) => {
       companyId,
       address,
       fuels: fuelsId,
+      latitude,
+      longitude
     }).save();
     responseMessage += "Vendor Successfully Created!";
     res
