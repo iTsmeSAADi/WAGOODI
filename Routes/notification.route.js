@@ -6,6 +6,7 @@ router.post("/company", auth.verifyUserCookie, auth.verifyAdmin, notification.ge
 router.post("/admin", auth.verifyUserCookie, auth.verifySuperAdmin, notification.allNotifications ) // can query..
 router.post("/driver", notification.getDriverNotifications)
 router.post("/station-manager", auth.verifyUserCookie, auth.verifyNotDriver, notification.getStationManagerNotifications) // can specify date.
+router.post("/order-manager", auth.verifyUserCookie, auth.verifyOrderManager, notification.getOrderManagerNotifications) // can specify date.
 
 
 

@@ -39,6 +39,29 @@ const getStationManagerNotifications = async (req, res) => {
   }
 };
 
+const getOrderManagerNotifications = async (req, res) => {
+  const {
+    accountId,
+    start_date = 0,
+    end_date = Math.floor(Date.now() / 1000),
+  } = req.body;
+  if (!accountId)
+    return res
+      .status(200)
+      .json({ success: false, error: { msg: "orderManagerAccountId is undefined!" } });
+  try {
+    const notifications = await getAllNotification(
+      { accountId },
+      start_date,
+      end_date
+    );
+    res.status(200).json({ success: true, data: notifications });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ success: false, error: { msg: error.msg } });
+  }
+};
+
 const getDriverNotifications = async (req, res) => {
   const {
     query,
@@ -172,6 +195,7 @@ const updateNotification = async (id, payload = {}) => {
 
 const getAllNotification = async (query, start_date, end_date) => {
   try {
+    console.log(query)
     const notifications = await Notification.find({
       ...query,
       createdAt: { $gte: start_date, $lte: end_date },
@@ -182,7 +206,6 @@ const getAllNotification = async (query, start_date, end_date) => {
       .populate("orderId")
       .populate("subscriptionId")
       .sort({"createdAt": -1});
-      console.log("notifications : ", notifications)
     return notifications;
   } catch (error) {
     throw error;
@@ -227,4 +250,5 @@ module.exports = {
   getCompanyNotifications,
   getDriverNotifications,
   getStationManagerNotifications,
+  getOrderManagerNotifications
 };

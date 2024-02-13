@@ -60,12 +60,15 @@ const getCompanyStations = async (req, res) => {
           name: { $first: "$name" },
           populatedFuels: { $first: "$populatedFuels" },
           latestOrder: { $first: "$latestOrder" },
-    address: {$first: "$address"}, 
-    phone: {$first: "$phone"},
-    favorite:{$first: "$favorite"} ,
-    createdAt: {$first: "$createdAt"},
-    active: {$first: "$active"}
-        },
+          address: { $first: "$address" },
+          phone: { $first: "$phone" },
+          favorite: { $first: "$favorite" },
+          latitude: { $first: "$latitude" }, // Include latitude
+          longitude: { $first: "$longitude" }, // Include longitude
+          createdAt: { $first: "$createdAt" },
+          active: { $first: "$active" }
+        }
+        
       },
     ]).exec();
     successMessage(res, stations, null);

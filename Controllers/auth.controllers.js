@@ -199,7 +199,7 @@ const verifyOTP = async (req, res) => {
     const otpDoc = await OTP.findOne({ otp });
     console.log("OTP DOC: ", otpDoc);
     const expiresAt = otpDoc.expiresAt * 1000;
-    console.log('expiresAt, Date.now()',expiresAt, Date.now())
+    console.log('expiresAt, Date.now()', expiresAt, Date.now())
     if (expiresAt <= Date.now()) {
       return res
         .status(400)
