@@ -22,11 +22,6 @@ const getCompanyStations = async (req, res) => {
         },
       },
       {
-        $unwind: {path: "$_id",
-        preserveNullAndEmptyArrays: true
-      }
-      },
-      {
         $lookup: {
           from: "fuels",
           localField: "fuels",
@@ -36,7 +31,7 @@ const getCompanyStations = async (req, res) => {
       },
       {
         $lookup: {
-          from: "orders", // Assuming the name of the orders collection is 'orders'
+          from: "orders",
           let: { stationId: "$_id" },
           pipeline: [
             {
@@ -55,6 +50,12 @@ const getCompanyStations = async (req, res) => {
         },
       },
       {
+        $unwind: {
+          path: "$_id",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
         $group: {
           _id: "$_id",
           name: { $first: "$name" },
@@ -63,13 +64,112 @@ const getCompanyStations = async (req, res) => {
           address: { $first: "$address" },
           phone: { $first: "$phone" },
           favorite: { $first: "$favorite" },
-          latitude: { $first: "$latitude" }, // Include latitude
-          longitude: { $first: "$longitude" }, // Include longitude
+          latitude: { $first: "$latitude" },
+          longitude: { $first: "$longitude" },
           createdAt: { $first: "$createdAt" },
-          active: { $first: "$active" }
-        }
-        
+          active: { $first: "$active" },
+        },
       },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          address: 1,
+          phone: 1,
+          favorite: 1,
+          createdAt: 1,
+          active: 1,
+          latestOrder: 1,
+          populatedFuels: {
+            $map: {
+              input: "$populatedFuels",
+              as: "fuel",
+              in: {
+                $mergeObjects: [
+                  "$$fuel",
+                  {
+                    percentageDifference: {
+                      $cond: {
+                        if: { $eq: ["$$fuel.max_value", 0] },
+                        then: 1, // Avoid division by zero
+                        else: {
+                          $abs: {
+                            $divide: [
+                              { $subtract: ["$$fuel.value", "$$fuel.max_value"] },
+                              { $abs: "$$fuel.max_value" },
+                            ],
+                          },
+                        },
+                      },
+                    },
+                    isMinPercentageDifference: {
+                      $eq: [
+                        "$$fuel.percentageDifference",
+                        {
+                          $min: "$populatedFuels.percentageDifference",
+                        },
+                      ],
+                    },
+                    color: {
+                      $switch: {
+                        branches: [
+                          {
+                            case: { $lte: ["$$fuel.percentageDifference", 0.3] },
+                            then: "#C93D33",
+                          },
+                          {
+                            case: { $lte: ["$$fuel.percentageDifference", 0.5] },
+                            then: "#6877DC",
+                          },
+                          {
+                            case: { $gte: ["$$fuel.percentageDifference", 0.5] },
+                            then: "#2EB100",
+                          },
+                        ],
+                        default: "#000000",
+                      },
+                      
+                      
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+      
+      {
+        "$addFields": {
+          "populatedFuels": {
+            "$map": {
+              "input": "$populatedFuels",
+              "as": "fuel",
+              "in": {
+                "$mergeObjects": [
+                  "$$fuel",
+                  {
+                    "color": {
+                      "$cond": {
+                        "if": { "$lte": ["$$fuel.percentageDifference", 0.3] },
+                        "then": "#C93D33",
+                        "else": {
+                          "$cond": {
+                            "if": { "$lte": ["$$fuel.percentageDifference", 0.5] },
+                            "then": "#6877DC",
+                            "else": "#2EB100"
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+      
     ]).exec();
     successMessage(res, stations, null);
   } catch (error) {
@@ -77,6 +177,7 @@ const getCompanyStations = async (req, res) => {
     res.status(400).json({ success: false, error: error.message });
   }
 };
+
 
 const createStation = async (req, res) => {
   let { companyId, managerId, fuels, name, address, phone, latitude, longitude } = req.body;
