@@ -258,7 +258,7 @@ server.listen(PORT, async (error) => {
 
 
 module.exports = {
-  upload: upload,
-  io: io,
-  paypal
+  getUpload: () => upload,
+  getIo: () => io,
+  getPaypal: () => paypal,
 };
