@@ -128,6 +128,7 @@ app.use(function (req, res, next) {
 // socket io functionalities;
 
 const io = new Server(server, {cors: {origin: true}}); // socket io server!
+// const io = require("socket.io").
 app.io = io;
 app.set("io", io)
 global.io = io;
