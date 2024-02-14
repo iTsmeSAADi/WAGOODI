@@ -100,7 +100,7 @@ const createOrder = async (req, res) => {
       });
 
     const stationsCheck = stations.every(
-      (station) => station?.id && station?.address && station?.status
+      (station) => station?.id && station?.address
     );
 
     if (!stationsCheck)

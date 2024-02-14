@@ -34,6 +34,7 @@ const PORT = process.env.PORT;
 
 const app = express();
 const server = http.createServer(app);
+const io = new Server(server, { cors: { origin: true } });
 
 app.io = io;
 app.set("io", io)
@@ -115,10 +116,7 @@ app.use(function (req, res, next) {
   next();
 });
 
-const io = new Server(server, {cors: {origin: true}});
-app.io = io;
-app.set("io", io)
-global.io = io;
+
 
 function socketEmit(socket, event, data) {
   socket.emit(event, data)
