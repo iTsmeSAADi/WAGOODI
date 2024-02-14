@@ -237,7 +237,7 @@ const stationStats = async (req, res) => {
       },
       {
         $match: {
-          "daysale.createdAt": { $gte: start_date, $lte: end_date },
+          "dayorders.createdAt": { $gte: start_date, $lte: end_date },
         },
       },
       {
@@ -250,20 +250,20 @@ const stationStats = async (req, res) => {
       },
       {
         $match: {
-          "daysale.createdAt": { $gte: start_date, $lte: end_date },
+          "daysales.createdAt": { $gte: start_date, $lte: end_date },
         },
       },
       {
         $unwind: {
           path: "$dayorders",
-        preserveNullAndEmptyArrays: true
-        }
+          preserveNullAndEmptyArrays: true,
+        },
       },
       {
         $unwind: {
           path: "$daysales",
-        preserveNullAndEmptyArrays: true
-        }
+          preserveNullAndEmptyArrays: true,
+        },
       },
       {
         $addFields: {
@@ -277,15 +277,16 @@ const stationStats = async (req, res) => {
           },
           name: { $first: "$name" },
           stationId: { $first: "$_id" },
-          totalOrder: { $sum: "dayorders" },
-          totalSale: { $sum: "daysales" },
-          totalSaleAmount: { $sum: "$daysales.amount" }, // Calculate total sale amount
-          totalSaleFuel: { $sum: "$daysales.fuel_value" }, // Calculate total sale fuel
-          totalOrderValue: { $sum: "$dayorders.amount" }, // Calculate total order value
-          totalOrderFuel: { $sum: "$dayorders.recieved_value" }, // Calculate total order fuel
+          totalOrder: { $sum: "$dayorders.quantity" }, // Change to the actual field in your dayorders collection
+          totalSale: { $sum: "$daysales.quantity" }, // Change to the actual field in your daysales collection
+          totalSaleAmount: { $sum: "$daysales.amount" },
+          totalSaleFuel: { $sum: "$daysales.fuel_value" },
+          totalOrderValue: { $sum: "$dayorders.amount" },
+          totalOrderFuel: { $sum: "$dayorders.recieved_value" },
         },
       },
     ]).exec();
+    
     console.log("stationStatistics : ", stationStatistics);
     successMessage(res, stationStatistics);
   } catch (error) {
