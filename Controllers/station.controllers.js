@@ -71,6 +71,11 @@ const getCompanyStations = async (req, res) => {
         },
       },
       {
+        $match: {
+          active: true, // Filter only active stations
+        },
+      },
+      {
         $project: {
           _id: 1,
           name: 1,
