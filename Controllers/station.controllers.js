@@ -78,6 +78,8 @@ const getCompanyStations = async (req, res) => {
           phone: 1,
           favorite: 1,
           createdAt: 1,
+          latitude: 1,
+          longitude: 1,
           active: 1,
           latestOrder: 1,
           populatedFuels: {
