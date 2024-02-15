@@ -55,7 +55,35 @@ const getOrderManagerNotifications = async (req, res) => {
       start_date,
       end_date
     );
-    res.status(200).json({ success: true, data: notifications });
+        // Process each notification in the array
+        const processedNotifications = notifications.map(notification => {
+          // Extract the information you need from each notification
+          const notificationId = notification.id && notification.id ? notification.id : "N/A";
+          const orderNumber = notification.orderId.from && notification.orderId.orderNumber ? notification.orderId.orderNumber : "N/A";
+          const orderFrom = notification.orderId.from.address && notification.orderId.from.address ? notification.orderId.from.address : "N/A";
+          const stationName = notification.stationId && notification.stationId.name ? notification.stationId.name : "N/A";
+          const stationAddress = notification.stationId && notification.stationId.address ? notification.stationId.address : "N/A";
+          const company = notification.companyId && notification.companyId.name ? notification.companyId.name : "N/A";
+          const orderDescription = notification.description && notification.description ? notification.description : "N/A";
+          const tipAmount = notification.orderId.fuel_value || 0; // Assuming a default value if undefined
+          const createdAt = notification.orderId.createdAt ? new Date(notification.orderId.createdAt * 1000) : "N/A";
+    
+          // Return the processed information for each notification
+          return {
+            notificationId,
+            orderNumber,
+            orderFrom,
+            stationName,
+            stationAddress,
+            company,
+            orderDescription,
+            tipAmount,
+            createdAt,
+          };
+        });
+    
+        // Send the response outside the loop
+        res.status(200).json({ success: true, data: processedNotifications });
   } catch (error) {
     console.log(error);
     res.status(400).json({ success: false, error: { msg: error.msg } });
