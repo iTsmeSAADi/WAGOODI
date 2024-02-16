@@ -18,6 +18,7 @@ router.post("/sales", verifyUserCookie, auth.verifyApproved, verifyNotDriver, st
 router.post("/records", verifyUserCookie, auth.verifyApproved, verifyNotDriver, station.stationRecords)
 router.post("/sales-orders", verifyUserCookie, auth.verifyApproved, verifyNotDriver, station.stationSalesOrders)
 router.post("/empty-tank", verifyUserCookie, auth.verifyApproved, verifyNotDriver, station.getStationEmptyTankFuel)
+router.patch("/fuel/update", verifyUserCookie, auth.verifyApproved, verifyAdmin, verifyCompanyId, station.updateStaionFuelDispenser)
 router.delete("/", verifyUserCookie, verifyCompanyId, auth.verifyAdminAndStationManager, station.deleteCompanyStation)
 
 

@@ -185,6 +185,73 @@ const getCompanyStations = async (req, res) => {
   }
 };
 
+const updateStaionFuelDispenser = async (req, res) => {
+  const { stationId, updateData } = req.body;
+
+  try {
+    // Check if stationId and updateData are provided
+    if (!stationId || !updateData) {
+      return res.status(400).json({
+        success: false,
+        error: { msg: "stationId or updateData is missing!" }
+      });
+    }
+
+    // Find the station by stationId
+    const station = await Station.findById(stationId);
+
+    // Check if the station exists
+    if (!station) {
+      return res.status(404).json({
+        success: false,
+        error: { msg: "Station not found with the provided stationId" }
+      });
+    }
+
+    // Update fuel values for the station
+    for (const fuelUpdate of updateData) {
+      const { fuelId, updatedValue } = fuelUpdate;
+
+      // Find the fuel by fuelId
+      const fuel = await Fuel.findById(fuelId);
+
+      // Check if the fuel exists
+      if (!fuel) {
+        return res.status(404).json({
+          success: false,
+          error: { msg: "Fuel not found with the provided fuelId" }
+        });
+      }
+
+      // Update the fuel value for the station
+      const index = station.fuels.findIndex((f) => f.equals(fuelId));
+      if (index !== -1) {
+        station.fuels[index] = fuelId;
+        fuel.value = updatedValue;
+        await fuel.save();
+      }
+    }
+
+    // Save the updated station
+    await station.save();
+
+    // Fetch the updated data from the database
+    const updatedStation = await Station.findById(stationId).populate('fuels');
+
+    res.status(200).json({
+      success: true,
+      data: {
+        message: "Fuel values updated successfully",
+        updatedStation
+      }
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+
 
 const createStation = async (req, res) => {
   let { companyId, managerId, fuels, name, address, phone, latitude, longitude } = req.body;
@@ -585,4 +652,5 @@ module.exports = {
   midnightStationSale,
   getStationEmptyTankFuel,
   deleteCompanyStation,
+  updateStaionFuelDispenser
 };
