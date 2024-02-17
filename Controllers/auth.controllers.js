@@ -466,7 +466,7 @@ const verifyNotDriver = async (req, res, next) => {
 };
 
 const verifyOrderManager = async (req, res, next) => {
-  if (req.user?.role === 2)
+  if (req.user?.role !== 2)
     return res
       .status(401)
       .json({ success: false, error: { msg: "Unauthorized!" } });
