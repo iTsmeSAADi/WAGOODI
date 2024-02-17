@@ -112,13 +112,13 @@ const createOrder = async (req, res) => {
         },
       });
 
-    if (driverId && !location)
-      return res.status(200).json({
-        success: false,
-        error: {
-          msg: "For a driver to be assigned, the current location of the driver should be specified!",
-        },
-      });
+    // if (driverId && !location)
+    //   return res.status(200).json({
+    //     success: false,
+    //     error: {
+    //       msg: "For a driver to be assigned, the current location of the driver should be specified!",
+    //     },
+    //   });
 
     const io = req?.app?.io;
 
