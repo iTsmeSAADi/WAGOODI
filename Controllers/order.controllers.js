@@ -12,6 +12,7 @@ const { createError } = require("../Utils/responseMessage");
 const EmptyTankModel = require("../Models/EmptyTank.schema");
 const Fuel = require("../Models/Fuel.schema");
 const TruckModel = require("../Models/Truck.schema");
+const { log } = require("console");
 
 const stationOrders = async (req, res) => {
   const { stationId, start_date = 0, end_date = Math.floor(Date.now() / 1000), query } = req.body;
@@ -198,7 +199,7 @@ const createOrder = async (req, res) => {
         error: { message: "No such orderManager found!" },
       });
 
-    if (req?.user?.companyId._id != orderManager.companyId)
+    if (req?.user?.companyId._id != orderManager.companyId.toString())
       return res.status(200).json({
         success: false,
         error: { message: "OrderManager is not of the specified company!" },
@@ -347,6 +348,7 @@ const createOrder = async (req, res) => {
     }).save();
 
     io.to(`/companyDriver-${driverId}`).emit("notification-message", driverNotification);
+    
 
     const tracking = await Tracking({
       driverId,
