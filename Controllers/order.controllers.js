@@ -294,7 +294,7 @@ const createOrder = async (req, res) => {
     if (!driverId) {
       const notificationDesc = `Accept Or Reject Order ${order._id}`;
       const companyDriversNotification = await new Notification({
-        orderId: Order._id,
+        orderId: order._id,  // Corrected here: use order._id
         type: 2,
         description: notificationDesc,
         stationId: stations[0].id,
@@ -312,7 +312,7 @@ const createOrder = async (req, res) => {
       stations.map(async ({ id: stationId, name: stationName }) => {
         const notificationDesc = `${order._id} has been generated for ${stationName} Station!`;
         const notification = await new Notification({
-          orderId: order._id,
+          orderId: order._id,  // Corrected here: use order._id
           companyId,
           type: 1,
           description: notificationDesc,
@@ -337,16 +337,16 @@ const createOrder = async (req, res) => {
 
     if (!driverId) return;
 
-    let notificationDesc = `${order._id} has been assigned for ${stations[0].id} Station! Order destination is ${stations[0].address} `;
+    let driverNotificationDesc = `${order._id} has been assigned for ${stations[0].id} Station! Order destination is ${stations[0].address} `;
     const driverNotification = await new Notification({
-      orderId: Order._id,
+      orderId: order._id,  // Corrected here: use order._id
       type: 2,
-      description: notificationDesc,
+      description: driverNotificationDesc,
       stationId: stations[0].id,
       accountId: driverId,
     }).save();
 
-    io.to(`/companyDriver-${driverId}`).emit(driverNotification);
+    io.to(`/companyDriver-${driverId}`).emit("notification-message", driverNotification);
 
     const tracking = await Tracking({
       driverId,
@@ -358,6 +358,8 @@ const createOrder = async (req, res) => {
     res.status(400).json({ success: false, error: error.message });
   }
 };
+
+
 
 
 

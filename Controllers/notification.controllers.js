@@ -66,7 +66,7 @@ const getOrderManagerNotifications = async (req, res) => {
           const company = notification.companyId && notification.companyId.name ? notification.companyId.name : "N/A";
           const orderDescription = notification.description && notification.description ? notification.description : "N/A";
           const tipAmount = notification.orderId.fuel_value || 0; // Assuming a default value if undefined
-          const createdAt = notification.orderId.createdAt ? new Date(notification.orderId.createdAt * 1000) : "N/A";
+          const createdAt = notification.orderId.createdAt ? notification.orderId.createdAt : "N/A";
     
           // Return the processed information for each notification
           return {
@@ -116,7 +116,7 @@ const getDriverNotifications = async (req, res) => {
       const company = notification.companyId && notification.companyId.name ? notification.companyId.name : "N/A";
       const orderDescription = notification.description && notification.description ? notification.description : "N/A";
       const tipAmount = notification.orderId.fuel_value || 0; // Assuming a default value if undefined
-      const createdAt = notification.orderId.createdAt ? new Date(notification.orderId.createdAt * 1000) : "N/A";
+      const createdAt = notification.orderId.createdAt ? notification.orderId.createdAt : "N/A";
 
       // Return the processed information for each notification
       return {
