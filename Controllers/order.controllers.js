@@ -304,7 +304,7 @@ const createOrder = async (req, res) => {
       }).save();
 
       console.log("IO ", io);
-
+      console.log('order company id', companyId)
       io.to(`/company/drivers-${companyId}`).emit("notification-message", {
         notification: companyDriversNotification,
         order: order,
