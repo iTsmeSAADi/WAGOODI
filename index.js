@@ -168,10 +168,14 @@ io.on("connection", (socket) => {
 
       socket.join("/stationManager-" + user.stationId);
       break;
-    case 4:
-      console.log("===============DRIVER SOCKET JOINED==============")
-      socket.join(["/companyDriver-" + user.companyId._id, "/driver-" + user._id, `/company/drivers-${user.companyId._id}`] )
-      break;
+      case 4:
+        console.log("===============DRIVER SOCKET JOINED==============")
+        console.log(user.companyId._id, user._id)
+        socket.join([
+          "/companyDriver-" + user.companyId._id,
+          "/driver-" + user._id,
+          `/company/drivers-${user.companyId._id}`
+        ]);
     default:
       console.log("no other then company room joined!")
       socket.join(`/company-${user.companyId._id}`)

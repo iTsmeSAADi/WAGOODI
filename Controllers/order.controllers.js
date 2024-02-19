@@ -294,9 +294,11 @@ const createOrder = async (req, res) => {
 
     if (!driverId) {
       const notificationDesc = `Accept Or Reject Order ${order._id}`;
+      const notifiactionOrder = await Order.findById(order._id)
       const companyDriversNotification = await new Notification({
         orderId: order._id,  // Corrected here: use order._id
         type: 2,
+        orderData: notifiactionOrder,
         description: notificationDesc,
         stationId: stations[0].id,
       }).save();
