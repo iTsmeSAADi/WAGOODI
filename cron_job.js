@@ -6,8 +6,7 @@ const DaySale = require("./Models/DaySale.schema.js");
 const { io } = require("./index.js");
 const Company = require("./Models/Company.schema.js")
 
-const stationsTotalOrderSale = async () => {
-  console.log("its hit")
+async function stationsTotalOrderSale() {
   cron.schedule("0 0 0 * * *", async function () {
     console.log("Midnight schedule for DayOrder and DaySale!");
     try {
@@ -85,7 +84,7 @@ const stationsTotalOrderSale = async () => {
   });
 };
 
-const stationRealTimeData = async () => {
+async function stationRealTimeData() {
   cron.schedule("1 * * * * *", async () => {
     try {
       const premiumCompanies = await Company.find({ subscription: 0 });
