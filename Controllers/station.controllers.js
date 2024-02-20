@@ -70,11 +70,11 @@ const getCompanyStations = async (req, res) => {
           active: { $first: "$active" },
         },
       },
-      {
-        $match: {
-          active: true, // Filter only active stations
-        },
-      },
+      // {
+      //   $match: {
+      //     active: true, // Filter only active stations
+      //   },
+      // },
       {
         $project: {
           _id: 1,
@@ -85,7 +85,7 @@ const getCompanyStations = async (req, res) => {
           createdAt: 1,
           latitude: 1,
           longitude: 1,
-          active: 0,
+          active: 1,
           latestOrder: 1,
           populatedFuels: {
             $map: {
