@@ -85,7 +85,7 @@ const getCompanyStations = async (req, res) => {
           createdAt: 1,
           latitude: 1,
           longitude: 1,
-          active: 1,
+          active: 0,
           latestOrder: 1,
           populatedFuels: {
             $map: {

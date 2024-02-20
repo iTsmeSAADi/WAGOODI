@@ -16,7 +16,6 @@ const http = require("http");
 const paypal = require('paypal-rest-sdk');
 
 
-const {stationsTotalOrderSale} = require('./cron_job.js')
 const authRoutes = require("./Routes/auth.route.js");
 const stationRoutes = require("./Routes/station.route.js");
 const statisticRoutes = require("./Routes/statistics.route.js");
@@ -243,10 +242,12 @@ app.use("/product", productRoutes)
 
 // ...
 
+const cron_job = require("./cron_job.js");
+
 // DayOrder and DaySale is totalled and saved every midnight.
 // 0 0 0 * * *
-stationsTotalOrderSale();
-// cron_job.stationRealTimeData();
+cron_job.stationsTotalOrderSale();
+cron_job.stationRealTimeData();
 
 
 app.use("*", (req, res) => res.status(404).send("Not Found!"));
