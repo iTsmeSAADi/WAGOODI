@@ -44,7 +44,6 @@ const createOrder = async (req, res) => {
       fuel_price,
       fuel_id,
       driverId,
-      location,
       from,
       reciept_number,
       expected_arrival,
@@ -109,7 +108,7 @@ const createOrder = async (req, res) => {
         success: false,
         error: {
           message:
-            "Stations are not properly defined! Must contain id, address, and status.",
+            "Stations are not properly defined! Must contain id, address.",
         },
       });
 
@@ -351,12 +350,6 @@ const createOrder = async (req, res) => {
 
     io.to(`/companyDriver-${driverId}`).emit("notification-message", driverNotification);
     
-
-    const tracking = await Tracking({
-      driverId,
-      orderId: order._id,
-      location,
-    }).save();
   } catch (error) {
     console.log(error);
     res.status(400).json({ success: false, error: error.message });
