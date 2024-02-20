@@ -290,16 +290,17 @@ const createOrder = async (req, res) => {
     }).save();
 
     res.status(200).json({ success: true, data: order });
-
+    
     if (!driverId) {
       const notificationDesc = `Accept Or Reject Order ${order._id}`;
       const notifiactionOrder = await Order.findById(order._id)
+      const specificStation = await Station.findById(stations[0].id)
       const companyDriversNotification = await new Notification({
         orderId: order._id,  // Corrected here: use order._id
         type: 2,
         orderData: notifiactionOrder,
         description: notificationDesc,
-        stationId: stations[0].id,
+        stationId: specificStation, // updated here
       }).save();
 
       console.log("IO ", io);
@@ -312,6 +313,7 @@ const createOrder = async (req, res) => {
 
     const notificationsCreation = await Promise.all(
       stations.map(async ({ id: stationId, name: stationName }) => {
+        
         const notificationDesc = `${order._id} has been generated for ${stationName} Station!`;
         const notification = await new Notification({
           orderId: order._id,  // Corrected here: use order._id
@@ -344,7 +346,7 @@ const createOrder = async (req, res) => {
       orderId: order._id,  // Corrected here: use order._id
       type: 2,
       description: driverNotificationDesc,
-      stationId: stations[0].id,
+      stationId: station[0].id,
       accountId: driverId,
     }).save();
 
