@@ -241,6 +241,7 @@ global.io = io;
 function socketEmit(socket, event, data) {
   socket.emit(event, data)
 }
+
 io.on("connection", (socket) => {
   console.log("connection established!");
   try {
@@ -248,8 +249,10 @@ io.on("connection", (socket) => {
   const {_doc: user} = jwt.verify(token, PRIVATE_KEY);
   console.log("USER : ", user)
   if (secretkey != SOCKET_SECRET_KEY || !token || !user)
+  
     return socket.disconnect();
-  switch (user.role) {
+    
+    switch (user.role) {
     case 0:
       console.log("===============admin SOCKET JOINED==============")
       socket.join("/admin");
@@ -275,7 +278,6 @@ io.on("connection", (socket) => {
       break;
       case 4:
         console.log("===============DRIVER SOCKET JOINED==============")
-        console.log(user.companyId._id, user._id)
         socket.join([
           "/companyDriver-" + user.companyId._id,
           "/driver-" + user._id,
@@ -330,6 +332,7 @@ io.on("connection", (socket) => {
     console.log(error)
 }
 });
+
 
 
 app.use("/auth", authRoutes);

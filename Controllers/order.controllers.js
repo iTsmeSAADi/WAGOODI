@@ -296,12 +296,12 @@ const createOrder = async (req, res) => {
       const notifiactionOrder = await Order.findById(order._id)
       const specificStation = await Station.findById(stations[0].id)
       const companyDriversNotification = await new Notification({
-        orderId: order._id,  // Corrected here: use order._id
+        orderId: order._id,
         type: 2,
         orderData: notifiactionOrder,
         description: notificationDesc,
-        stationId: specificStation, // updated here
-      }).save();
+        stationId: specificStation,
+      }).save();            
 
       console.log("IO ", io);
       console.log('order company id', companyId)
@@ -346,7 +346,7 @@ const createOrder = async (req, res) => {
       orderId: order._id,  // Corrected here: use order._id
       type: 2,
       description: driverNotificationDesc,
-      stationId: station[0].id,
+      stationId: stations[0].id,
       accountId: driverId,
     }).save();
 
@@ -358,6 +358,34 @@ const createOrder = async (req, res) => {
   }
 };
 
+const driverGetOrders = async (req, res) => {
+  try {
+    const { driverId } = req.params;
+
+    // Check if driverId is provided
+    if (!driverId) {
+      return res.status(400).json({ message: 'Driver ID is required' });
+    }
+
+    console.log('driverId', driverId);
+
+    // Assuming you have a model named "Order" for orders
+    const assignedOrders = await Order.find({ driverId: driverId });
+
+    if (!assignedOrders || assignedOrders.length === 0) {
+      // Respond with an appropriate message if no orders are found
+      return res.status(404).json({ message: 'No orders found for the given driverId' });
+    }
+
+    console.log('assignedOrders', assignedOrders);
+    // Respond with the orders found for the given driverId
+    res.status(200).json(assignedOrders);
+  } catch (error) {
+    console.error('Error in driverGetOrders:', error);
+    // Handle the error and respond with an appropriate message
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
 
 
 
@@ -1321,4 +1349,5 @@ module.exports = {
   orderManagerCompletedOrder,
   driverAcceptOrder,
   cancelOrder,
+  driverGetOrders
 };
