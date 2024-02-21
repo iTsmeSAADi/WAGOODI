@@ -269,9 +269,11 @@ const stationStats = async (req, res) => {
         $addFields: {
           dayOrderDateMillis: {
             $cond: {
-              if: { $eq: [{ $type: "$dayorders.createdAt" }, "date"] },
-              then: "$dayorders.createdAt",
-              else: { $multiply: [{ $toDate: "$dayorders.createdAt" }, 1000] },
+              if: {
+                $gte: ["$dayorders.createdAt", new Date(0)],
+              },
+              then: { $multiply: ["$dayorders.createdAt", 1000] },
+              else: "$dayorders.createdAt",
             },
           },
         },
