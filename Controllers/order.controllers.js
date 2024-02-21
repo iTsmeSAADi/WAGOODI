@@ -664,7 +664,7 @@ const driverAssignOrder = async (req, res) => {
     order.startedAt ? (order.startedAt = Math.floor(Date.now() / 1000)) : "";
     order.canceled ? (order.canceled = null) : "";
     await order.save();
-    driver.on_going = true;
+    // driver.on_going = true;
     await driver.save();
     res.status(200).json({
       success: true,

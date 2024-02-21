@@ -57,7 +57,7 @@ const individualDriverStats = async (req, res) => {
   const {
     id,
     status,
-    start_date = Math.floor(Date.now() / 1000) - 2592000,
+    start_date = Math.floor(Date.now() / 1000) - 2592000, // 2592000 seconds in 30 days
     end_date = Math.floor(Date.now() / 1000),
   } = req.body;
   const statusCond =
@@ -140,7 +140,7 @@ const individualDriverStats = async (req, res) => {
 const driversStats = async (req, res) => {
   const {
     companyId,
-    start_date = Math.floor(Date.now() / 1000) - 2592000,
+    start_date = Math.floor(Date.now() / 1000) - 2592000, // 2592000 seconds in 30 days
     end_date = Math.floor(Date.now() / 1000),
   } = req.body;
   if (!companyId)
@@ -213,7 +213,7 @@ const driversStats = async (req, res) => {
 const stationStats = async (req, res) => {
   const {
     id,
-    start_date = Math.floor(Date.now() / 1000) - 2592000,
+    start_date = Math.floor(Date.now() / 1000) - 2592000, // 2592000 seconds in 30 days
     end_date = Math.floor(Date.now() / 1000),
   } = req.body;
   if (!id)
@@ -298,7 +298,7 @@ const stationStats = async (req, res) => {
 const companyAllStats = async (req, res) => {
   const {
     companyId,
-    start_date = Math.floor(Date.now() / 1000) - 2592000,
+    start_date = Math.floor(Date.now() / 1000) - 2592000, // 2592000 seconds in 30 days
     end_date = Math.floor(Date.now() / 1000),
   } = req.body;
   if (!companyId)
