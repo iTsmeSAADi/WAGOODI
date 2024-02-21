@@ -15,7 +15,7 @@ router.patch("/update", auth.verifyUserCookie, auth.verifyApproved, order.update
 router.get("/:id", auth.verifyUserCookie, auth.verifyApproved, auth.verifyNotDriver, order.getOrder)
 router.post("/report", auth.verifyUserCookie, auth.verifyApproved, order.generateAndMailOrdersReport);
 router.post("/driver/assign", auth.verifyUserCookie, auth.verifyApproved, auth.verifyDriver, order.driverAssignOrder)
-router.get("/driver/getOrder/:driverId", auth.verifyUserCookie, auth.verifyApproved, auth.verifyDriver, order.driverGetOrders)
+router.get("/driver/:driverId", auth.verifyUserCookie, auth.verifyApproved, auth.verifyDriver, order.driverGetOrders)
 router.post("/driver/recieved", upload.single("attachment"), auth.verifyUserCookie, auth.verifyApproved, auth.verifyDriver, order.driverRecievedOrder)
 router.post("/driver/delievered", auth.verifyUserCookie, auth.verifyApproved, auth.verifyDriver, order.driverDelieveredOrder);
 router.post("/manager/complete", upload.single("attachment"), auth.verifyUserCookie, auth.verifyApproved, auth.verifySeniorStationManager, order.ManagerCompleteOrder);
