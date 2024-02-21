@@ -8,14 +8,17 @@ const OrderSchema = new mongoose.Schema({
       address: String,
       status: {
         type: Number,
-        enum: [0, 1, 2, 3, 4, 5], // 0 : on-going, 1 : assigned, 2: recieved, 3: delivered, 4 : complete
+        enum: [0, 1, 2, 3, 4, 5], // 0 : on-going, 1 : assigned, 2: received, 3: delivered, 4 : complete
         default: 0,
       },
       name: String,
       pickedAt: { type: Number },
       deliveryTime: { type: Number },
-      fuel_value: {type: Number},
-      fuel_recieved: { type: Number },
+      fuel_value: { type: Number },
+      fuel_received: { type: Number },
+      // Add latitude and longitude properties
+      latitude: { type: Number },
+      longitude: { type: Number },
     },
   ],
   orderNumber: {type: Number, default: Math.floor(Math.random() * 90000) + 1000},

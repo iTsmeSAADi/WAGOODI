@@ -228,7 +228,7 @@ const createOrder = async (req, res) => {
 
     if (from.option === 1) {
       const station = await Station.findById(from.stationId);
-
+      console.log("station", station)
       if (!station)
         return res.status(400).json({
           success: false,
@@ -273,7 +273,7 @@ const createOrder = async (req, res) => {
 
     stations[0].status = 1;
 
-    const order = await new Order({
+    const order = new Order({
       stations,
       orderManagerId,
       attachments: attachmentObj,
@@ -287,7 +287,7 @@ const createOrder = async (req, res) => {
       expected_arrival,
       startedAt: driverId ? Math.floor(Date.now() / 1000) : null,
       driverTip,
-    }).save();
+    })
 
     res.status(200).json({ success: true, data: order });
     
@@ -631,12 +631,29 @@ const driverAssignOrder = async (req, res) => {
         success: false,
         error: { message: "driver with such id not found!" },
       });
-    if (driver.on_going)
-      return res.status(200).json({
-        success: false,
-        error: { message: "Driver already have an order to complete!" },
-      });
+    // if (driver.on_going)
+    //   return res.status(200).json({
+    //     success: false,
+    //     error: { message: "Driver already have an order to complete!" },
+    //   });
+    var selectedOption;
+
     const order = await Order.findOne({ _id: id });
+    console.log('order', order);
+    
+    const selectedOrder = order.from;
+    
+    if (selectedOrder.option === 0) {
+      // Run query on Vendor model
+      selectedOption = await Vendor.findById(selectedOrder.vendorId);
+    } else if (selectedOrder.option === 1) {
+      // Run query on Station model
+      selectedOption = await Station.findById(selectedOrder.vendorId); // Assuming vendorId is actually a stationId
+    }
+    
+    
+
+ 
     if (!order)
       return res.status(200).json({
         success: false,
@@ -668,7 +685,7 @@ const driverAssignOrder = async (req, res) => {
     await driver.save();
     res.status(200).json({
       success: true,
-      data: { tracking, updateOrder, msg: "Order Successfully Assigned!" },
+      data: { tracking, updateOrder, selectedOption, msg: "Order Successfully Assigned!" },
     });
     res.end();
     const notificationDesc = `${Order._id} has been assigned to driver ${req.user.name}!`;
