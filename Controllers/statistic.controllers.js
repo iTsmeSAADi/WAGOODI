@@ -267,7 +267,12 @@ const stationStats = async (req, res) => {
       },
       {
         $addFields: {
-          dayOrderDateMillis: { $multiply: ["$dayorders.createdAt", 1000] },
+          dayOrderDateMillis: {
+            $multiply: [
+              { $toDate: "$dayorders.createdAt" }, // Convert to date explicitly
+              1000,
+            ],
+          },
         },
       },
       {
@@ -286,6 +291,7 @@ const stationStats = async (req, res) => {
         },
       },
     ]).exec();
+    
     
     console.log("stationStatistics : ", stationStatistics);
     successMessage(res, stationStatistics);
