@@ -57,7 +57,7 @@ const individualDriverStats = async (req, res) => {
   const {
     id,
     status,
-    start_date = Math.floor(Date.now() / 1000) - 2592000, // 2592000 seconds in 30 days
+    start_date = Math.floor(Date.now() / 1000) - 2592000,
     end_date = Math.floor(Date.now() / 1000),
   } = req.body;
   const statusCond =
@@ -140,7 +140,7 @@ const individualDriverStats = async (req, res) => {
 const driversStats = async (req, res) => {
   const {
     companyId,
-    start_date = Math.floor(Date.now() / 1000) - 2592000, // 2592000 seconds in 30 days
+    start_date = Math.floor(Date.now() / 1000) - 2592000,
     end_date = Math.floor(Date.now() / 1000),
   } = req.body;
   if (!companyId)
@@ -211,11 +211,11 @@ const driversStats = async (req, res) => {
 };
 
 const stationStats = async (req, res) => {
-  const {
-    id,
-    start_date = Math.floor(Date.now() / 1000) - 2592000, // 2592000 seconds in 30 days
-    end_date = Math.floor(Date.now() / 1000),
-  } = req.body;
+const {
+  id,
+  start_date = Math.floor(Date.now() / 1000) - 2592000, // 2592000 seconds in 30 days
+  end_date = Math.floor(Date.now() / 1000),
+} = req.body;
   if (!id)
     return res
       .status(200)
@@ -236,8 +236,17 @@ const stationStats = async (req, res) => {
         },
       },
       {
+        $unwind: {
+          path: "$dayorders",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
         $match: {
-          "dayorders.createdAt": { $gte: start_date, $lte: end_date },
+          $and: [
+            { "dayorders.createdAt": { $gte: start_date } },
+            { "dayorders.createdAt": { $lte: end_date } },
+          ],
         },
       },
       {
@@ -249,36 +258,28 @@ const stationStats = async (req, res) => {
         },
       },
       {
-        $match: {
-          "daysales.createdAt": { $gte: start_date, $lte: end_date },
-        },
-      },
-      {
-        $unwind: {
-          path: "$dayorders",
-          preserveNullAndEmptyArrays: true,
-        },
-      },
-      {
         $unwind: {
           path: "$daysales",
           preserveNullAndEmptyArrays: true,
         },
       },
       {
-        $addFields: {
-          dayOrderDateMillis: { $multiply: ["$dayorders.createdAt", 1000] },
+        $match: {
+          $and: [
+            { "daysales.createdAt": { $gte: start_date } },
+            { "daysales.createdAt": { $lte: end_date } },
+          ],
         },
       },
       {
         $group: {
           _id: {
-            day: { $dayOfMonth: "$dayOrderDateMillis" },
+            day: { $dayOfMonth: { $toDate: "$dayorders.createdAt" } },
           },
           name: { $first: "$name" },
           stationId: { $first: "$_id" },
-          totalOrder: { $sum: "$dayorders.quantity" }, // Change to the actual field in your dayorders collection
-          totalSale: { $sum: "$daysales.quantity" }, // Change to the actual field in your daysales collection
+          totalOrder: { $sum: "$dayorders.quantity" },
+          totalSale: { $sum: "$daysales.quantity" },
           totalSaleAmount: { $sum: "$daysales.amount" },
           totalSaleFuel: { $sum: "$daysales.fuel_value" },
           totalOrderValue: { $sum: "$dayorders.amount" },
@@ -286,6 +287,7 @@ const stationStats = async (req, res) => {
         },
       },
     ]).exec();
+    
     
     console.log("stationStatistics : ", stationStatistics);
     successMessage(res, stationStatistics);
@@ -298,7 +300,7 @@ const stationStats = async (req, res) => {
 const companyAllStats = async (req, res) => {
   const {
     companyId,
-    start_date = Math.floor(Date.now() / 1000) - 2592000, // 2592000 seconds in 30 days
+    start_date = Math.floor(Date.now() / 1000) - 2592000,
     end_date = Math.floor(Date.now() / 1000),
   } = req.body;
   if (!companyId)

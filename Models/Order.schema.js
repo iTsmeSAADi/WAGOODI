@@ -46,7 +46,7 @@ const OrderSchema = new mongoose.Schema({
   fuel_value: { type: Number, required: true },
   fuel_recieved: { type: Number},
   fuel_price: { type: Number, required: true },
-  to: { type: [String], required: true },
+  to: { type: [String], required: false },
   from: {
     option: {
       type: Number,
