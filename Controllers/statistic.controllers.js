@@ -267,15 +267,7 @@ const stationStats = async (req, res) => {
       },
       {
         $addFields: {
-          dayOrderDateMillis: {
-            $cond: {
-              if: {
-                $gte: ["$dayorders.createdAt", new Date(0)],
-              },
-              then: { $multiply: ["$dayorders.createdAt", 1000] },
-              else: "$dayorders.createdAt",
-            },
-          },
+          dayOrderDateMillis: { $multiply: ["$dayorders.createdAt", 1000] },
         },
       },
       {
@@ -294,7 +286,6 @@ const stationStats = async (req, res) => {
         },
       },
     ]).exec();
-    
     
     console.log("stationStatistics : ", stationStatistics);
     successMessage(res, stationStatistics);
