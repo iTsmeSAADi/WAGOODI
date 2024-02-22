@@ -259,16 +259,26 @@ const updatePassword = async (req, res) => {
 
 const listAllUsers = async (req, res) => {
   const { query = {}, start_date = 0, end_date = Date.now() } = req.body;
+  const companyId = req.body.companyId; // Assuming companyId is passed in the request body
+
+  // Check if companyId is present in the request
+  if (!companyId) {
+    return res.status(400).json({ success: false, error: "Company ID is required!" });
+  }
+
   try {
     const userList = await Account.find({
       ...query,
+      companyId: companyId, // Filter accounts by companyId
     });
-    res.status(200).json({ success: true, data: userList });
+
+    res.status(200).json({ success: true, data: userList, message: userList.length > 0 ? "Company Users" : "Company doesn't have any user yet" });
   } catch (error) {
     console.log(error);
     res.status(400).json({ success: false, error: error.message });
   }
 };
+
 
 const getUser = async (req, res) => {
   const { userId } = req.body;
