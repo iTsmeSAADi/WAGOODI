@@ -693,15 +693,15 @@ const driverAssignOrder = async (req, res) => {
       order.stations.map(async ({ id: stationId }) => {
         const notification = await new Notification({
           orderId: order._id,
-          companyId,
+          companyId: order.companyId,
           type: 1,
           description: notificationDesc,
           accountId: driverId,
           stationId: stationId,
         }).save();
         io.to("/admin")
-          .to("/companyAdmin-" + companyId)
-          .to("/orderManager-" + companyId)
+          .to("/companyAdmin-" + order.companyId)
+          .to("/orderManager-" + order.companyId)
           .to("/stationManager-" + stationId)
           .to("/driver-" + driverId)
           .emit("notification-message", notification);
