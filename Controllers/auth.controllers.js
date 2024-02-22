@@ -454,7 +454,7 @@ const verifyAdminAndCompanyAdmin = async (req, res, next) => {
     if (role == 1 && companyId != req.user.companyId._id) {
       return res.status(401).json({
         success: false,
-        error: { msg: "Unauthorized! Only, owner of company can access!" },
+        error: { msg: "Unauthorized!, Only owner of company can access!" },
       });
     }
     next();
