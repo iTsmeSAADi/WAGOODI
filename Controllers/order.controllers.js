@@ -688,25 +688,25 @@ const driverAssignOrder = async (req, res) => {
       data: { tracking, updateOrder, selectedOption, msg: "Order Successfully Assigned!" },
     });
     res.end();
-    const notificationDesc = `${Order._id} has been assigned to driver ${req.user.name}!`;
-    await Promise.all(
-      order.stations.map(async ({ id: stationId }) => {
-        const notification = await new Notification({
-          orderId: order._id,
-          companyId: order.companyId,
-          type: 1,
-          description: notificationDesc,
-          accountId: driverId,
-          stationId: stationId,
-        }).save();
-        io.to("/admin")
-          .to("/companyAdmin-" + order.companyId)
-          .to("/orderManager-" + order.companyId)
-          .to("/stationManager-" + stationId)
-          .to("/driver-" + driverId)
-          .emit("notification-message", notification);
-      })
-    );
+    // const notificationDesc = `${Order._id} has been assigned to driver ${req.user.name}!`;
+    // await Promise.all(
+    //   order.stations.map(async ({ id: stationId }) => {
+    //     const notification = await new Notification({
+    //       orderId: order._id,
+    //       companyId: order.companyId,
+    //       type: 1,
+    //       description: notificationDesc,
+    //       accountId: driverId,
+    //       stationId: stationId,
+    //     }).save();
+    //     io.to("/admin")
+    //       .to("/companyAdmin-" + order.companyId)
+    //       .to("/orderManager-" + order.companyId)
+    //       .to("/stationManager-" + stationId)
+    //       .to("/driver-" + driverId)
+    //       .emit("notification-message", notification);
+    //   })
+    // );
   } catch (error) {
     console.log(error);
     createError(res, 400, error.message)
