@@ -228,7 +228,7 @@ const createOrder = async (req, res) => {
 
     if (from.option === 1) {
       const station = await Station.findById(from.stationId);
-      console.log("station", station)
+
       if (!station)
         return res.status(400).json({
           success: false,
@@ -273,7 +273,7 @@ const createOrder = async (req, res) => {
 
     stations[0].status = 1;
 
-    const order = new Order({
+    const order = await new Order({
       stations,
       orderManagerId,
       attachments: attachmentObj,
@@ -287,7 +287,7 @@ const createOrder = async (req, res) => {
       expected_arrival,
       startedAt: driverId ? Math.floor(Date.now() / 1000) : null,
       driverTip,
-    })
+    }).save();
 
     res.status(200).json({ success: true, data: order });
     
