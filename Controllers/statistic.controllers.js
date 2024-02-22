@@ -211,15 +211,17 @@ const driversStats = async (req, res) => {
 };
 
 const stationStats = async (req, res) => {
-const {
-  id,
-  start_date = Math.floor(Date.now() / 1000) - 2592000, // 2592000 seconds in 30 days
-  end_date = Math.floor(Date.now() / 1000),
-} = req.body;
+  const {
+    id,
+    start_date = Math.floor(Date.now() / 1000) - 2592000, // 2592000 seconds in 30 days
+    end_date = Math.floor(Date.now() / 1000),
+  } = req.body;
+
   if (!id)
     return res
       .status(200)
       .json({ success: false, error: { msg: "id is undefined!" } });
+
   try {
     const stationStatistics = await Station.aggregate([
       {
@@ -274,7 +276,11 @@ const {
       {
         $group: {
           _id: {
-            day: { $dayOfMonth: { $toDate: "$dayorders.createdAt" } },
+            day: {
+              $dayOfMonth: {
+                $toDate: { $multiply: ["$dayorders.createdAt", 1000] }, // Adjust based on the actual date format in your data
+              },
+            },
           },
           name: { $first: "$name" },
           stationId: { $first: "$_id" },
@@ -287,15 +293,15 @@ const {
         },
       },
     ]).exec();
-    
-    
+
     console.log("stationStatistics : ", stationStatistics);
-    successMessage(res, stationStatistics);
+    res.status(200).json({ success: true, data: stationStatistics });
   } catch (error) {
     console.log(error);
-    createError(res, 400, error.message);
+    res.status(400).json({ success: false, error: error.message });
   }
 };
+
 
 const companyAllStats = async (req, res) => {
   const {
