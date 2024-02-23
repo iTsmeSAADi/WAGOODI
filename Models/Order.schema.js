@@ -52,18 +52,19 @@ const OrderSchema = new mongoose.Schema({
   to: { type: [String], required: false },
   from: {
     option: {
-      type: Boolean,
+      type: Number,
+      enum: [0, 1], // 0 : vendor, 1 : station
       required: true,
     },
     stationId: { type: mongoose.Types.ObjectId, ref: "stations" },
     vendorId: { type: mongoose.Types.ObjectId, ref: "vendors" },
-    address: { type: String, required: true }
+    address: {type: String, required: true}
   },
   createdAt: { type: Number, default: Math.floor(Date.now() / 1000) },
   arrival_date: { type: Number },
   expected_arrival: {type: Number},
   reciept_number: {type: String, required: true},
-  startedAt: {type: Number},
+  startedAt: {type: Number}, //test
   driverTip: {type: Number},
 });
 
