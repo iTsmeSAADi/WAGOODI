@@ -675,7 +675,7 @@ const verifyAdminAndStationManager = async (req, res, next) => {
     return createError(
       res,
       401,
-      "Unauthorized! You should be superAdmin, Admin or OrderManager"
+      "Unauthorized! You should be superAdmin, Admin or StationManager"
     );
   }
 };
