@@ -85,7 +85,7 @@ const createOrder = async (req, res) => {
 console.log("Debugging information:", from.option, from.vendorId);
 
     if (
-      !from.option ||
+      from.option == {} ||
       (from.option === 0 && !from.vendorId) ||
       (from.option === 1 && !from.stationId)
     ) {

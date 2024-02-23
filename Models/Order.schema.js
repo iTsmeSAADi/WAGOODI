@@ -52,13 +52,12 @@ const OrderSchema = new mongoose.Schema({
   to: { type: [String], required: false },
   from: {
     option: {
-      type: Number,
-      enum: [0, 1], // 0 : vendor, 1 : station
+      type: Boolean,
       required: true,
     },
     stationId: { type: mongoose.Types.ObjectId, ref: "stations" },
     vendorId: { type: mongoose.Types.ObjectId, ref: "vendors" },
-    address: {type: String, required: true}
+    address: { type: String, required: true }
   },
   createdAt: { type: Number, default: Math.floor(Date.now() / 1000) },
   arrival_date: { type: Number },
