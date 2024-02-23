@@ -669,7 +669,7 @@ const verifyActiveStation = async (req, res, next) => {
 
 const verifyAdminAndStationManager = async (req, res, next) => {
   const role = req.user.role;
-  if (role == 0 || role == 1 || role == 2) {
+  if (role == 0 || role == 1 || role == 3) {
     next();
   } else {
     return createError(

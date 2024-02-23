@@ -82,16 +82,18 @@ const createOrder = async (req, res) => {
         success: false,
         error: { message: "From field should be an object!" },
       });
+console.log("Debugging information:", from.option, from.vendorId);
 
     if (
       !from.option ||
       (from.option === 0 && !from.vendorId) ||
       (from.option === 1 && !from.stationId)
-    )
+    ) {
       return res.status(400).json({
         success: false,
         error: { message: "From field is missing required fields!" },
       });
+    }
 
     if (from.option === 0 && !attachment)
       return res.status(200).json({
