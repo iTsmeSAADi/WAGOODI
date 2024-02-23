@@ -648,7 +648,7 @@ const driverAssignOrder = async (req, res) => {
       selectedOption = await Vendor.findById(selectedOrder.vendorId);
     } else if (selectedOrder.option === 1) {
       // Run query on Station model
-      selectedOption = await Station.findById(selectedOrder.vendorId); // Assuming vendorId is actually a stationId
+      selectedOption = await Station.findById(selectedOrder.stationId);
     }
     
     
