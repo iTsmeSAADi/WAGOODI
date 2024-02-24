@@ -24,7 +24,7 @@ const cancel_url = process.env.PAYPAL_CANCEL_URL;
 const createSubscription = async (req, res) => {
   const io = req?.app?.io;
   const {
-    productId = "658c094f87489f4a11ba5f0b",
+    productId = "65d8996e8deb45917ee3aa17",
     start_date = new Date(),
     payment_method = "paypal",
     isTrial = false,

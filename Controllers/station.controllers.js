@@ -1,6 +1,7 @@
 const Station = require("../Models/Station.schema");
 const Order = require("../Models/Order.schema");
 const Sale = require("../Models/Sale.schema");
+
 const Fuel = require("../Models/Fuel.schema");
 const DaySale = require("../Models/DaySale.schema");
 const DayOrder = require("../Models/DayOrder.schema");
@@ -347,6 +348,33 @@ const updateStation = async (req, res) => {
   }
 };
 
+const addStationFuelDispenser = async (req, res) => {
+  const { payload } = req.body;
+
+  try {
+    if (!payload || !payload.max_value || !payload.price_litre || !payload.type || !payload.value) {
+      throw new Error('Invalid payload. Please provide all required fields.');
+    }
+
+    const newFuel = new Fuel({
+      max_value: payload.max_value,
+      price_litre: payload.price_litre,
+      type: payload.type,
+      value: payload.value,
+    });
+
+    const savedFuel = await newFuel.save();
+
+    res.status(201).json({ success: true, data: savedFuel });
+
+  } catch (error) {
+    // Step 4: Handle failure response
+    console.error(error);
+    res.status(400).json({ success: false, error: error.message });
+  }
+};
+
+
 
 const listStations = async (req, res) => {
   try {
@@ -652,5 +680,6 @@ module.exports = {
   midnightStationSale,
   getStationEmptyTankFuel,
   deleteCompanyStation,
-  updateStaionFuelDispenser
+  updateStaionFuelDispenser,
+  addStationFuelDispenser
 };
