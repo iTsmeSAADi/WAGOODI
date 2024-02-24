@@ -286,6 +286,9 @@ io.on("connection", (socket) => {
           "/driver-" + user._id,
           `/company/drivers-${user.companyId._id}`
         ]);
+
+        io.to(`/driver-${user._id}`).emit("assigned-order");
+
     default:
       console.log("no other then company room joined!")
       socket.join(`/company-${user.companyId._id}`)

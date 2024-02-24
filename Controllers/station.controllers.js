@@ -368,7 +368,6 @@ const addStationFuelDispenser = async (req, res) => {
     res.status(201).json({ success: true, data: savedFuel });
 
   } catch (error) {
-    // Step 4: Handle failure response
     console.error(error);
     res.status(400).json({ success: false, error: error.message });
   }
