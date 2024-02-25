@@ -675,6 +675,7 @@ const driverAssignOrder = async (req, res) => {
         "driver truck capacity is lower then the order fuel value!"
       );
     order.driverId = driverId;
+    order.status = 1;
     const tracking = await new Tracking({
       driverId,
       orderId: id,

@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
 // const {ConnectionOptions} = require("mongoose");
+// const moment = require('moment')
 const upload = multer({ dest: "dataFiles/" });
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
@@ -245,99 +246,142 @@ function socketEmit(socket, event, data) {
   socket.emit(event, data)
 }
 
-io.on("connection", (socket) => {
+io.on("connection", async (socket) => {
   console.log("connection established!");
   try {
-  const { secretkey, token } = socket.handshake.headers;
-  const {_doc: user} = jwt.verify(token, PRIVATE_KEY);
-  console.log("USER : ", user)
-  if (secretkey != SOCKET_SECRET_KEY || !token || !user)
-  
-    return socket.disconnect();
-    
-    switch (user.role) {
-    case 0:
-      console.log("===============admin SOCKET JOINED==============")
-      socket.join("/admin");
-      break;
-    case 1:
-      console.log("===============company SOCKET JOINED==============")
-      socket.join([
-        "/companyAdmin-" + user.companyId._id,
-        "/order-" + user.companyId._id,
-      ]);
-      break;
-    case 2:
-      console.log("===============ordermanager SOCKET JOINED==============")
-      socket.join([
-        "/orderManager-" + user.companyId._id,
-        "/order-" + user.companyId._id,
-      ]);
-      break;
-    case 3:
-      console.log("===============stationmanager SOCKET JOINED==============")
+    const { secretkey, token } = socket.handshake.headers;
+    const { _doc: user } = jwt.verify(token, PRIVATE_KEY);
+    console.log("USER : ", user);
+    if (secretkey !== SOCKET_SECRET_KEY || !token || !user) {
+      return socket.disconnect();
+    }
 
-      socket.join("/stationManager-" + user.stationId);
-      break;
+    switch (user.role) {
+      case 0:
+        console.log("===============admin SOCKET JOINED==============");
+        socket.join("/admin");
+        break;
+      case 1:
+        console.log("===============company SOCKET JOINED==============");
+        socket.join([
+          "/companyAdmin-" + user.companyId._id,
+          "/order-" + user.companyId._id,
+        ]);
+        break;
+      case 2:
+        console.log("===============ordermanager SOCKET JOINED==============");
+        socket.join([
+          "/orderManager-" + user.companyId._id,
+          "/order-" + user.companyId._id,
+        ]);
+        break;
+      case 3:
+        console.log("===============stationmanager SOCKET JOINED==============");
+        socket.join("/stationManager-" + user.stationId);
+        break;
       case 4:
-        console.log("===============DRIVER SOCKET JOINED==============")
+        console.log("===============DRIVER SOCKET JOINED==============");
         socket.join([
           "/companyDriver-" + user.companyId._id,
           "/driver-" + user._id,
-          `/company/drivers-${user.companyId._id}`
+          `/company/drivers-${user.companyId._id}`,
         ]);
+        // Your socket logic
+        socket.join([
+          "/companyDriver-" + user.companyId._id,
+          "/driver-" + user._id,
+          `/company/drivers-${user.companyId._id}`,
+        ]);
+        
+        // Calculate the timestamp for 24 hours ago
+        const twentyFourHoursAgo = Math.floor(Date.now() / 1000) - 24 * 60 * 60;
+        
+        // Fetch orders for the specific driver with status 1, created within the last 24 hours, and unassigned to any driver
+        try {
+          const orders = await Order.find({
+            $or: [
+              { driverId: user._id, status: 1, createdAt: { $gte: twentyFourHoursAgo } },
+              { status: 0, createdAt: { $gte: twentyFourHoursAgo } },
+            ],
+          });
+        
+          // Now you have the relevant orders for the driver with user._id, status 1, and created within the last 24 hours,
+          // as well as orders that are unassigned to any driver
+          console.log("Driver Orders with status 1 created within the last 24 hours and unassigned to any driver:", orders);
+        
+          // You can emit the orders to the client or process them further as needed
+          socket.emit('notification-message', orders);
+        } catch (error) {
+          console.error("Error fetching driver orders:", error);
+        }
+        
+          // // Inside an asynchronous function
+          // const twentyFourHoursAgo = moment().subtract(24, 'hours').unix();
 
-        io.to(`/driver-${user._id}`).emit("assigned-order");
+          // try {
+          //   const tracking = await Tracking.find({
+          //     driverId: user._id,
+          //     createdAt: { $gte: twentyFourHoursAgo }
+          //   });
 
-    default:
-      console.log("no other then company room joined!")
-      socket.join(`/company-${user.companyId._id}`)
-      break;
+          //   console.log('Tracking data in the last 24 hours:', tracking);
+          //   socket.emit("tracking", tracking)
+          // } catch (error) {
+          //   console.error('Error fetching tracking data:', error);
+          //   // Handle the error accordingly
+          // }
+
+        socket.on("/tracking/update", async (data) => {
+          const { trackingId, orderId, location, role, accountId, companyId } = data;
+          if (!trackingId || !orderId || !location || !role || !accountId || !companyId) {
+            socketEmit(socket, "error", { error: "Incomplete data provided!" });
+            return;
+          }
+
+          try {
+            const order = await Order.findOne({ _id: orderId, companyId });
+            if (!order) {
+              socketEmit(socket, "error", { error: "Order with such orderId and companyId not found!" });
+              return;
+            }
+
+            if (order.driverId !== accountId) {
+              socketEmit(socket, "error", { error: "accountId does not match driverId of an Order!" });
+              return;
+            }
+
+            const tracking = await Tracking.findOneAndUpdate(
+              { _id: trackingId, orderId, driverId: accountId },
+              { location },
+              { new: true }
+            );
+
+            if (!tracking) {
+              socketEmit(socket, "error", { error: "Tracking not found with the specified conditions!" });
+              return;
+            }
+
+            // Emit the tracking data to the driver socket
+            io.to(`/driver-${user._id}`).emit("tracking-update", { order, tracking });
+          } catch (error) {
+            console.log("SOCKET ERROR");
+            console.log(error);
+            socketEmit(socket, "error", { error: "Error processing tracking update!" });
+          }
+        });
+
+        break;
+      default:
+        console.log("No other than company room joined!");
+        socket.join(`/company-${user.companyId._id}`);
+        break;
+    }
+  } catch (error) {
+    console.log("SOCKET ERROR");
+    console.log(error);
   }
-  
-  socket.on("/tracking/update", async (data) => {
-    const {trackingId, orderId, location, role, accountId, companyId} = data;
-    if(!trackingId) {
-      socketEmit(socket, "error", {error: "trackingId is undefined!"})
-      return
-      } 
-    if(!orderId) {
-      socketEmit(socket, "error", {error: "orderId is undefined!"})
-      return
-      } 
-    if(!location) {
-      socketEmit(socket, "error", {error: "location is undefined!"})
-      return
-      } 
-    if(!role) {
-      socketEmit(socket, "error", {error: "role is undefined!"})
-      return
-      } 
-    if(!accountId) {
-      socketEmit(socket, "error", {error: "accountId is undefined!"})
-      return
-      } 
-    if(!companyId) {
-      socketEmit(socket, "error", {error: "companyId is undefined!"})
-      return
-      } 
-      const order = await Order.findOne({_id: orderId, companyId})
-      if(!order) {
-        socketEmit(socket, "error", {error: "Order with such orderId and companyId not found!"})
-        return
-      }
-      if(orderId.driverId != accountId){
-        socketEmit(socket, "error", {error: "accountId doesnot match driverId of an Order!"})
-        return
-      }
-      const tracking = await Tracking.findOneAndUpdate({_id: trackingId, orderId, driverId: accountId}, {new: true})
-      io.to(`/company-${companyId}`).emit("order-location", {order, tracking})
-    })
-} catch (error) {
-    console.log("SOCKET ERROR")
-    console.log(error)
-}
 });
+
 
 
 
