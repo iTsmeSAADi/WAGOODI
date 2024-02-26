@@ -699,7 +699,7 @@ const driverAssignOrder = async (req, res) => {
     await driver.save();
     res.status(200).json({
       success: true,
-      data: { tracking, updateOrder, selectedOption, msg: "Order Successfully Assigned!" },
+      data: { tracking, selectedOption, msg: "Order Successfully Assigned!" },
     });
     res.end();
     // const notificationDesc = `${Order._id} has been assigned to driver ${req.user.name}!`;
