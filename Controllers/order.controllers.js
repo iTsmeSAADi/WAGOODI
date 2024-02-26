@@ -83,7 +83,8 @@ const createOrder = async (req, res) => {
         success: false,
         error: { message: "From field should be an object!" },
       });
-console.log("Debugging information:", from.option, from.vendorId);
+      
+      console.log("Debugging information:", from.option, from.vendorId);
 
     if (
       from.option == {} ||

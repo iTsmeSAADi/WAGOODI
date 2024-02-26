@@ -60,7 +60,7 @@ const OrderSchema = new mongoose.Schema({
     vendorId: { type: mongoose.Types.ObjectId, ref: "vendors" },
     address: {type: String, required: true}
   },
-  createdAt: { type: Number, default: Math.floor(Date.now() / 1000) },
+  createdAt: {type: Number, default: Math.floor(Date.now() / 1000)},
   arrival_date: { type: Number },
   expected_arrival: {type: Number},
   reciept_number: {type: String, required: true},

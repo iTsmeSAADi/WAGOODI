@@ -11,6 +11,7 @@ const cron = require("node-cron");
 const DayOrder = require("./Models/DayOrder.schema.js");
 const Station = require("./Models/Station.schema.js");
 const Sale = require("./Models/Sale.schema.js");
+const DriverRejectedModel = require('./Models/DriverRejectedOrders.schema')
 const DaySale = require("./Models/DaySale.schema.js");
 const { Server } = require("socket.io");
 const http = require("http");
@@ -295,16 +296,32 @@ io.on("connection", async (socket) => {
         
         const twentyFourHoursAgo = Math.floor(Date.now() / 1000) - 24 * 60 * 60;
         
+
         try {
+          // Get the rejected orders by the driver within the last 24 hours
+          const rejectedOrders = await driverRejectedModel.find({
+            driverId: user._id,
+            createdAt: { $gte: twentyFourHoursAgo },
+          });
+      
+          // Extract the orderIds from the rejected orders
+          const rejectedOrderIds = rejectedOrders.map((rejectedOrder) => rejectedOrder.orderId);
+      
+          // Fetch orders that are not in the rejectedOrderIds list
           const orders = await Order.find({
-            $or: [
-              { driverId: user._id, status: 1, createdAt: { $gte: twentyFourHoursAgo } },
-              { status: 0, createdAt: { $gte: twentyFourHoursAgo } },
+            $and: [
+              {
+                $or: [
+                  { driverId: user._id, status: 1, createdAt: { $gte: twentyFourHoursAgo } },
+                  { status: 0, createdAt: { $gte: twentyFourHoursAgo } },
+                ],
+              },
+              { _id: { $nin: rejectedOrderIds } },
             ],
           });
-        
+      
           console.log("Driver Orders with status 1 created within the last 24 hours and unassigned to any driver:", orders);
-        
+      
           socket.emit('notification-message', orders);
         } catch (error) {
           console.error("Error fetching driver orders:", error);
