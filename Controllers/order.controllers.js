@@ -646,11 +646,8 @@ const driverAssignOrder = async (req, res) => {
         success: false,
         error: { message: "driver with such id not found!" },
       });
-    // if (driver.on_going)
-    //   return res.status(200).json({
-    //     success: false,
-    //     error: { message: "Driver already have an order to complete!" },
-    //   });
+
+      // cut
     var selectedOption;
 
     const order = await Order.findOne({ _id: id });
@@ -776,7 +773,7 @@ const driverCancelOrder = async (req, res) => {
     const assignedOrder = await Order.findOne({ _id: orderId, status: 1, driverId: driverId });
 
     if (!assignedOrder) {
-      return res.status(403).json({ error: 'Order cannot be canceled by this driver' });
+      return res.status(403).json({ success: false, error: 'Order cannot be canceled by this driver' });
     }
 
     // Find the order by orderId and update its status to 5 (or any other status code you use for canceled orders)
@@ -787,14 +784,14 @@ const driverCancelOrder = async (req, res) => {
     );
 
     if (!updatedOrder) {
-      return res.status(404).json({ error: 'Order not found' });
+      return res.status(404).json({ success: false, error: 'Order not found' });
     }
 
     // Optionally, you can send the saved entry and the updated order back to the client or perform other actions
-    res.status(200).json({ message: 'Order canceled successfully', data: { updatedOrder } });
+    res.status(200).json({ success: true, message: 'Order canceled successfully', data: { updatedOrder } });
   } catch (error) {
     console.error("Error canceling order:", error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ success: false, error: 'Internal server error' });
   }
 };
 
