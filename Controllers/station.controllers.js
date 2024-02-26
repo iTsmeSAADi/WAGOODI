@@ -211,7 +211,7 @@ const updateStaionFuelDispenser = async (req, res) => {
 
     // Update fuel values for the station
     for (const fuelUpdate of updateData) {
-      const { fuelId, updatedValue } = fuelUpdate;
+      const { fuelId, updatedValue, updatePriceLitre, updateType, updateMaxValue } = fuelUpdate;
 
       // Find the fuel by fuelId
       const fuel = await Fuel.findById(fuelId);
@@ -229,6 +229,9 @@ const updateStaionFuelDispenser = async (req, res) => {
       if (index !== -1) {
         station.fuels[index] = fuelId;
         fuel.value = updatedValue;
+         fuel.price_litre = updatePriceLitre; 
+         fuel.type = updateType;
+         fuel.max_value = updateMaxValue;
         await fuel.save();
       }
     }
