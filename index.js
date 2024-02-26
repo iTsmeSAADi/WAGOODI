@@ -293,10 +293,8 @@ io.on("connection", async (socket) => {
           `/company/drivers-${user.companyId._id}`,
         ]);
         
-        // Calculate the timestamp for 24 hours ago
         const twentyFourHoursAgo = Math.floor(Date.now() / 1000) - 24 * 60 * 60;
         
-        // Fetch orders for the specific driver with status 1, created within the last 24 hours, and unassigned to any driver
         try {
           const orders = await Order.find({
             $or: [
@@ -305,11 +303,8 @@ io.on("connection", async (socket) => {
             ],
           });
         
-          // Now you have the relevant orders for the driver with user._id, status 1, and created within the last 24 hours,
-          // as well as orders that are unassigned to any driver
           console.log("Driver Orders with status 1 created within the last 24 hours and unassigned to any driver:", orders);
         
-          // You can emit the orders to the client or process them further as needed
           socket.emit('notification-message', orders);
         } catch (error) {
           console.error("Error fetching driver orders:", error);

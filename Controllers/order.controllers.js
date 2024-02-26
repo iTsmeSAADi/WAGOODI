@@ -12,6 +12,7 @@ const { createError } = require("../Utils/responseMessage");
 const EmptyTankModel = require("../Models/EmptyTank.schema");
 const Fuel = require("../Models/Fuel.schema");
 const TruckModel = require("../Models/Truck.schema");
+const DriverRejectedModel = require('../Models/DriverRejectedOrders.schema')
 const { log } = require("console");
 
 const stationOrders = async (req, res) => {
@@ -82,7 +83,8 @@ const createOrder = async (req, res) => {
         success: false,
         error: { message: "From field should be an object!" },
       });
-console.log("Debugging information:", from.option, from.vendorId);
+
+    console.log("Debugging information:", from.option, from.vendorId);
 
     if (
       from.option == {} ||
@@ -100,27 +102,6 @@ console.log("Debugging information:", from.option, from.vendorId);
         success: false,
         error: { message: "Attachment of order receipt file is undefined!" },
       });
-
-    const stationsCheck = stations.every(
-      (station) => station?.id && station?.address
-    );
-
-    if (!stationsCheck)
-      return res.status(200).json({
-        success: false,
-        error: {
-          message:
-            "Stations are not properly defined! Must contain id, address.",
-        },
-      });
-
-    // if (driverId && !location)
-    //   return res.status(200).json({
-    //     success: false,
-    //     error: {
-    //       msg: "For a driver to be assigned, the current location of the driver should be specified!",
-    //     },
-    //   });
 
     const io = req?.app?.io;
 
@@ -291,23 +272,22 @@ console.log("Debugging information:", from.option, from.vendorId);
       driverTip,
     }).save();
 
-    res.status(200).json({ success: true, data: order });
-    
+    // Emit notifications using Socket.IO before sending the response
     if (!driverId) {
       const notificationDesc = `Accept Or Reject Order ${order._id}`;
-      const notifiactionOrder = await Order.findById(order._id)
-      const specificStation = await Station.findById(stations[0].id)
+      const notifiactionOrder = await Order.findById(order._id);
+      const specificStation = await Station.findById(stations[0].id);
       const companyDriversNotification = await new Notification({
         orderId: order._id,
         type: 2,
         orderData: notifiactionOrder,
         description: notificationDesc,
         stationId: specificStation,
-      }).save();            
+      }).save();
 
       console.log("IO ", io);
       console.log('order company id', companyId)
-      
+
       io.to(`/company/drivers-${companyId}`).emit("notification-message", {
         notification: companyDriversNotification,
         order: order,
@@ -316,10 +296,10 @@ console.log("Debugging information:", from.option, from.vendorId);
 
     const notificationsCreation = await Promise.all(
       stations.map(async ({ id: stationId, name: stationName }) => {
-        
+
         const notificationDesc = `${order._id} has been generated for ${stationName} Station!`;
         const notification = await new Notification({
-          orderId: order._id,  // Corrected here: use order._id
+          orderId: order._id,
           companyId,
           type: 1,
           description: notificationDesc,
@@ -346,7 +326,7 @@ console.log("Debugging information:", from.option, from.vendorId);
 
     let driverNotificationDesc = `${order._id} has been assigned for ${stations[0].id} Station! Order destination is ${stations[0].address} `;
     const driverNotification = await new Notification({
-      orderId: order._id,  // Corrected here: use order._id
+      orderId: order._id,
       type: 2,
       description: driverNotificationDesc,
       stationId: stations[0].id,
@@ -354,12 +334,15 @@ console.log("Debugging information:", from.option, from.vendorId);
     }).save();
 
     io.to(`/companyDriver-${driverId}`).emit("notification-message", driverNotification);
-    
+
+    // Send the response to the client after emitting notifications
+    res.status(200).json({ success: true, data: order });
   } catch (error) {
     console.log(error);
     res.status(400).json({ success: false, error: error.message });
   }
 };
+
 
 const driverGetOrders = async (req, res) => {
   try {
@@ -618,6 +601,16 @@ const driverAcceptOrder = async (req, res) => {
 
 const driverAssignOrder = async (req, res) => {
   const { id, driverId, location } = req.body;
+  const existingRejectionEntry = await DriverRejectedModel.findOne({ order: id, driverId: driverId });
+  if (existingRejectionEntry) {
+    return res.status(400).json({ error: 'This order has been rejected by the driver' });
+  }
+
+  const canceledEnrty = await Order.findOne({ _id: id, status: 5 });
+  if (canceledEnrty) {
+    return res.status(400).json({ error: 'This order has been canceled by the driver' });
+  }
+
   const io = req?.app?.io
   if (!id)
     return res
@@ -654,10 +647,7 @@ const driverAssignOrder = async (req, res) => {
       selectedOption = await Station.findById(selectedOrder.stationId);
     }
     
-    
-
- 
-    if (!order)
+     if (!order)
       return res.status(200).json({
         success: false,
         error: { message: "Order with such id not found!" },
@@ -716,6 +706,80 @@ const driverAssignOrder = async (req, res) => {
     createError(res, 400, error.message)
   }
 };
+
+
+const driverRejectOrder = async (req, res) => {
+  try {
+    const { orderId, driverId } = req.body;
+
+    // Check if the combination of orderId and driverId already exists in the DriverRejectedModel
+    const existingRejectionEntry = await DriverRejectedModel.findOne({ order: orderId, driverId: driverId });
+
+    if (existingRejectionEntry) {
+      return res.status(400).json({ error: 'Order has already been rejected by the driver' });
+    }
+
+    // Find the order by orderId and update its status to 0
+    const updatedOrder = await Order.findOneAndUpdate(
+      { _id: orderId },
+      { $set: { status: 0 } },
+      { new: true } // Return the updated order
+    );
+
+    if (!updatedOrder) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    // Add the rejection information to the DriverRejectedModel
+    const description = `Order with orderId: ${orderId} has been rejected by driver: ${driverId}`;
+    const rejectionEntry = new DriverRejectedModel({
+      driverId: driverId,
+      order: orderId,
+      description: description,
+    });
+
+    // Save the rejection entry to the database
+    const savedRejectionEntry = await rejectionEntry.save();
+
+    // Optionally, you can send the saved entry and the updated order back to the client or perform other actions
+    res.status(200).json({ message: 'Order rejected successfully', data: { updatedOrder, savedRejectionEntry } });
+  } catch (error) {
+    console.error("Error rejecting order:", error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+const driverCancelOrder = async (req, res) => {
+  try {
+    const { orderId, driverId } = req.body;
+
+    // Check if the order has been assigned to the specific driver (status is 1 and driverId is the same)
+    const assignedOrder = await Order.findOne({ _id: orderId, status: 1, driverId: driverId });
+
+    if (!assignedOrder) {
+      return res.status(403).json({ error: 'Order cannot be canceled by this driver' });
+    }
+
+    // Find the order by orderId and update its status to 5 (or any other status code you use for canceled orders)
+    const updatedOrder = await Order.findOneAndUpdate(
+      { _id: orderId },
+      { $set: { status: 5 } },
+      { new: true } // Return the updated order
+    );
+
+    if (!updatedOrder) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    // Optionally, you can send the saved entry and the updated order back to the client or perform other actions
+    res.status(200).json({ message: 'Order canceled successfully', data: { updatedOrder } });
+  } catch (error) {
+    console.error("Error canceling order:", error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+
 
 const getDriverOrderReciept = async (req, res) => {
   const { driverId, orderId } = req.body;
@@ -1370,5 +1434,7 @@ module.exports = {
   orderManagerCompletedOrder,
   driverAcceptOrder,
   cancelOrder,
-  driverGetOrders
+  driverGetOrders,
+  driverRejectOrder,
+  driverCancelOrder
 };
