@@ -646,12 +646,12 @@ const driverAssignOrder = async (req, res) => {
         success: false,
         error: { message: "driver with such id not found!" },
       });
-      driver.on_going = false;
-    // if (driver.on_going)
-    //   return res.status(200).json({
-    //     success: false,
-    //     error: { message: "Driver already have an order to complete!" },
-    //   });
+      // driver.on_going = false;
+    if (driver.on_going)
+      return res.status(200).json({
+        success: false,
+        error: { message: "Driver already have an order to complete!" },
+      });
     var selectedOption;
 
     const order = await Order.findOne({ _id: id });
@@ -695,7 +695,7 @@ const driverAssignOrder = async (req, res) => {
     order.startedAt ? (order.startedAt = Math.floor(Date.now() / 1000)) : "";
     order.canceled ? (order.canceled = null) : "";
     await order.save();
-    // driver.on_going = true;
+    driver.on_going = true;
     await driver.save();
     res.status(200).json({
       success: true,
