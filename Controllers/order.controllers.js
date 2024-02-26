@@ -646,8 +646,12 @@ const driverAssignOrder = async (req, res) => {
         success: false,
         error: { message: "driver with such id not found!" },
       });
-
-      // cut
+      driver.on_going = false;
+    // if (driver.on_going)
+    //   return res.status(200).json({
+    //     success: false,
+    //     error: { message: "Driver already have an order to complete!" },
+    //   });
     var selectedOption;
 
     const order = await Order.findOne({ _id: id });
