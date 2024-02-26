@@ -83,8 +83,7 @@ const createOrder = async (req, res) => {
         success: false,
         error: { message: "From field should be an object!" },
       });
-
-    console.log("Debugging information:", from.option, from.vendorId);
+console.log("Debugging information:", from.option, from.vendorId);
 
     if (
       from.option == {} ||
@@ -102,6 +101,27 @@ const createOrder = async (req, res) => {
         success: false,
         error: { message: "Attachment of order receipt file is undefined!" },
       });
+
+    const stationsCheck = stations.every(
+      (station) => station?.id && station?.address
+    );
+
+    if (!stationsCheck)
+      return res.status(200).json({
+        success: false,
+        error: {
+          message:
+            "Stations are not properly defined! Must contain id, address.",
+        },
+      });
+
+    // if (driverId && !location)
+    //   return res.status(200).json({
+    //     success: false,
+    //     error: {
+    //       msg: "For a driver to be assigned, the current location of the driver should be specified!",
+    //     },
+    //   });
 
     const io = req?.app?.io;
 
@@ -272,22 +292,23 @@ const createOrder = async (req, res) => {
       driverTip,
     }).save();
 
-    // Emit notifications using Socket.IO before sending the response
+    res.status(200).json({ success: true, data: order });
+    
     if (!driverId) {
       const notificationDesc = `Accept Or Reject Order ${order._id}`;
-      const notifiactionOrder = await Order.findById(order._id);
-      const specificStation = await Station.findById(stations[0].id);
+      const notifiactionOrder = await Order.findById(order._id)
+      const specificStation = await Station.findById(stations[0].id)
       const companyDriversNotification = await new Notification({
         orderId: order._id,
         type: 2,
         orderData: notifiactionOrder,
         description: notificationDesc,
         stationId: specificStation,
-      }).save();
+      }).save();            
 
       console.log("IO ", io);
       console.log('order company id', companyId)
-
+      
       io.to(`/company/drivers-${companyId}`).emit("notification-message", {
         notification: companyDriversNotification,
         order: order,
@@ -296,10 +317,10 @@ const createOrder = async (req, res) => {
 
     const notificationsCreation = await Promise.all(
       stations.map(async ({ id: stationId, name: stationName }) => {
-
+        
         const notificationDesc = `${order._id} has been generated for ${stationName} Station!`;
         const notification = await new Notification({
-          orderId: order._id,
+          orderId: order._id,  // Corrected here: use order._id
           companyId,
           type: 1,
           description: notificationDesc,
@@ -326,7 +347,7 @@ const createOrder = async (req, res) => {
 
     let driverNotificationDesc = `${order._id} has been assigned for ${stations[0].id} Station! Order destination is ${stations[0].address} `;
     const driverNotification = await new Notification({
-      orderId: order._id,
+      orderId: order._id,  // Corrected here: use order._id
       type: 2,
       description: driverNotificationDesc,
       stationId: stations[0].id,
@@ -334,15 +355,12 @@ const createOrder = async (req, res) => {
     }).save();
 
     io.to(`/companyDriver-${driverId}`).emit("notification-message", driverNotification);
-
-    // Send the response to the client after emitting notifications
-    res.status(200).json({ success: true, data: order });
+    
   } catch (error) {
     console.log(error);
     res.status(400).json({ success: false, error: error.message });
   }
 };
-
 
 const driverGetOrders = async (req, res) => {
   try {
