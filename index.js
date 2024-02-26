@@ -305,7 +305,7 @@ io.on("connection", async (socket) => {
           });
       
           // Extract the orderIds from the rejected orders
-          const rejectedOrderIds = rejectedOrders.map((rejectedOrder) => rejectedOrder.orderId);
+          const rejectedOrderIds = rejectedOrders.map((rejectedOrder) => rejectedOrder.order);
       
           // Fetch orders that are not in the rejectedOrderIds list
           const orders = await Order.find({
