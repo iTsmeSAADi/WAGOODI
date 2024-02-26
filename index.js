@@ -299,7 +299,7 @@ io.on("connection", async (socket) => {
 
         try {
           // Get the rejected orders by the driver within the last 24 hours
-          const rejectedOrders = await driverRejectedModel.find({
+          const rejectedOrders = await DriverRejectedModel.find({
             driverId: user._id,
             createdAt: { $gte: twentyFourHoursAgo },
           });
