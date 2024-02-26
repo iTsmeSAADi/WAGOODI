@@ -735,7 +735,7 @@ const driverRejectOrder = async (req, res) => {
     const existingRejectionEntry = await DriverRejectedModel.findOne({ order: orderId, driverId: driverId });
 
     if (existingRejectionEntry) {
-      return res.status(400).json({ error: 'Order has already been rejected by the driver' });
+      return res.status(400).json({ error: 'Order has already been rejected by the driver', success: false });
     }
 
     // Find the order by orderId and update its status to 0
@@ -746,7 +746,7 @@ const driverRejectOrder = async (req, res) => {
     );
 
     if (!updatedOrder) {
-      return res.status(404).json({ error: 'Order not found' });
+      return res.status(404).json({ error: 'Order not found', success: false });
     }
 
     // Add the rejection information to the DriverRejectedModel
@@ -761,10 +761,10 @@ const driverRejectOrder = async (req, res) => {
     const savedRejectionEntry = await rejectionEntry.save();
 
     // Optionally, you can send the saved entry and the updated order back to the client or perform other actions
-    res.status(200).json({ message: 'Order rejected successfully', data: { updatedOrder, savedRejectionEntry } });
+    res.status(200).json({ message: 'Order rejected successfully', success: true, data: { updatedOrder, savedRejectionEntry } });
   } catch (error) {
     console.error("Error rejecting order:", error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ success: false, error: 'Internal server error' });
   }
 };
 
