@@ -16,6 +16,7 @@ router.get("/:id", auth.verifyUserCookie, auth.verifyApproved, auth.verifyNotDri
 router.post("/report", auth.verifyUserCookie, auth.verifyApproved, order.generateAndMailOrdersReport);
 router.post("/driver/assign", auth.verifyUserCookie, auth.verifyApproved, auth.verifyDriver, order.driverAssignOrder)
 router.post("/driver/reject", auth.verifyUserCookie, auth.verifyApproved, auth.verifyDriver, order.driverRejectOrder)
+router.post("/approve", upload.single("attachment"), auth.verifyUserCookie, auth.verifyApproved, auth.verifyOrderManager, order.ApproveOrder)
 router.post("/driver/cancel", auth.verifyUserCookie, auth.verifyApproved, auth.verifyDriver, order.driverCancelOrder)
 router.get("/driver/:driverId", auth.verifyUserCookie, auth.verifyApproved, auth.verifyDriver, order.driverGetOrders)
 router.post("/driver/recieved", upload.single("attachment"), auth.verifyUserCookie, auth.verifyApproved, auth.verifyDriver, order.driverRecievedOrder)

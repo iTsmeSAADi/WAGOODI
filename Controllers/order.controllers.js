@@ -364,6 +364,73 @@ const createOrder = async (req, res) => {
   }
 };
 
+const ApproveOrder = async (req, res) => {
+  try {
+    const { order_number, start_point, station_name, arrival_time, reciept_number, required_volume, received_volume, issued_volume } = req.body;
+    const attachment = req.file?.buffer;
+    const mimetype = req.file?.mimetype;
+
+    console.log('req.files', req.files);
+
+    console.log(order_number, start_point, station_name, arrival_time, reciept_number, required_volume, received_volume, issued_volume, req.body);
+
+    if (!order_number || !start_point || !station_name || !arrival_time || !reciept_number || !required_volume || !received_volume || !issued_volume) {
+      return res.status(400).json({ success: false, error: 'Missing required parameters in the request body.' });
+    }
+
+    // Find the order by order number
+    const existingOrder = await Order.findOne({ orderNumber: order_number });
+
+    if (!existingOrder) {
+      return res.status(404).json({ success: false, error: 'Order not found.' });
+    }
+
+    // Check if the order is already approved
+    if (existingOrder.status === 4) {
+      return res.status(400).json({ success: false, error: 'Order is already approved.' });
+    }
+
+    // Check if the order is assigned (status 1)
+    if (existingOrder.status !== 1) {
+      return res.status(400).json({ success: false, error: 'Order is not assigned for delivery yet.' });
+    }
+
+    let attachmentName = "signed-receiving-receipt";
+    let attachmentUrl = await firebase_methods.uploadOrderAttachment(
+      existingOrder.companyId,
+      attachmentName,
+      attachment,
+      mimetype
+    );
+
+    // Update order status to 4 (approved) and update other parameters
+    existingOrder.status = 4; // Change status to approved
+    existingOrder.start_point = start_point;
+    existingOrder.stations[0].name = station_name;
+    existingOrder.stations[0].deliveryTime = arrival_time;
+    existingOrder.attachments.push({ name: attachmentName, url: attachmentUrl });
+    existingOrder.reciept_number = reciept_number;
+
+    // Add updates for required_volume, issued_volume, and received_volume
+    existingOrder.required_volume = required_volume;
+    existingOrder.issued_volume = issued_volume;
+    existingOrder.received_volume = received_volume;
+
+    // Save the updated order
+    await existingOrder.save();
+
+    // Example: Send a success response
+    return res.status(200).json({ success: true, message: 'Order approved successfully.', order: existingOrder });
+  } catch (error) {
+    console.error('Error in ApproveOrder:', error);
+    return res.status(500).json({ success: false, error: 'Internal server error.' });
+  }
+};
+
+
+
+
+
 const driverGetOrders = async (req, res) => {
   try {
     const { driverId } = req.params;
@@ -1457,5 +1524,6 @@ module.exports = {
   cancelOrder,
   driverGetOrders,
   driverRejectOrder,
-  driverCancelOrder
+  driverCancelOrder,
+  ApproveOrder
 };
