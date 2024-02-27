@@ -57,7 +57,7 @@ const createOrder = async (req, res) => {
 
     const attachment = req?.file?.buffer;
     const mimetype = req?.file?.mimetype;
-
+    const fromOption = parseInt(from.option)
     if (
       !stations ||
       !orderManagerId ||
@@ -84,12 +84,12 @@ const createOrder = async (req, res) => {
         error: { message: "From field should be an object!" },
       });
       
-      console.log("Debugging information:", from.option, from.vendorId);
+      console.log("Debugging information:", fromOption, from.vendorId);
 
     if (
-      from.option == {} ||
-      (from.option === 0 && !from.vendorId) ||
-      (from.option === 1 && !from.stationId)
+      fromOption == {} ||
+      (fromOption === 0 && !from.vendorId) ||
+      (fromOption === 1 && !from.stationId)
     ) {
       return res.status(400).json({
         success: false,
@@ -97,7 +97,7 @@ const createOrder = async (req, res) => {
       });
     }
 
-    if (from.option === 0 && !attachment)
+    if (fromOption === 0 && !attachment)
       return res.status(200).json({
         success: false,
         error: { message: "Attachment of order receipt file is undefined!" },
@@ -210,8 +210,9 @@ const createOrder = async (req, res) => {
 
     let attachmentName;
     let attachmentUrl;
-
-    if (from.option === 0) {
+      console.log('fromOption', typeof fromOption)
+    if (fromOption === 0) {
+      console.log("entered here")
       const vendor = await Vendor.findById(from?.vendorId);
 
       if (!vendor)
@@ -230,7 +231,7 @@ const createOrder = async (req, res) => {
       );
     }
 
-    if (from.option === 1) {
+    if (fromOption === 1) {
       const station = await Station.findById(from.stationId);
 
       if (!station)
@@ -273,7 +274,7 @@ const createOrder = async (req, res) => {
     }
 
     const attachmentObj =
-      from.option === 0 ? [{ name: attachmentName, url: attachmentUrl }] : [];
+    fromOption === 0 ? [{ name: attachmentName, url: attachmentUrl }] : [];
 
     stations[0].status = 1;
 
@@ -646,12 +647,12 @@ const driverAssignOrder = async (req, res) => {
         success: false,
         error: { message: "driver with such id not found!" },
       });
-      // driver.on_going = false;
-    if (driver.on_going)
-      return res.status(200).json({
-        success: false,
-        error: { message: "Driver already have an order to complete!" },
-      });
+      driver.on_going = false;
+    // if (driver.on_going)
+    //   return res.status(200).json({
+    //     success: false,
+    //     error: { message: "Driver already have an order to complete!" },
+    //   });
     var selectedOption;
 
     const order = await Order.findOne({ _id: id });
@@ -675,15 +676,15 @@ const driverAssignOrder = async (req, res) => {
       console.log(typeof order.companyId)
       console.log(driver.companyId)
       console.log(order.companyId == driver.companyId)
-      if(!order.companyId.equals(driver.companyId)) return createError(res, 400, "order and driver company does not match!")
+      // if(!order.companyId.equals(driver.companyId)) return createError(res, 400, "order and driver company does not match!")
     const driverTruck = await TruckModel.findOne({ driverId });
-    if(!driverTruck) return createError(res, 400, "driver has no truck under his arsenal!")
-    if (driverTruck.capacity < order.fuel_value)
-      return createError(
-        res,
-        400,
-        "driver truck capacity is lower then the order fuel value!"
-      );
+    // if(!driverTruck) return createError(res, 400, "driver has no truck under his arsenal!")
+    // if (driverTruck.capacity < order.fuel_value)
+    //   return createError(
+    //     res,
+    //     400,
+    //     "driver truck capacity is lower then the order fuel value!"
+    //   );
     order.driverId = driverId;
     order.status = 1;
     const tracking = await new Tracking({
@@ -699,7 +700,7 @@ const driverAssignOrder = async (req, res) => {
     await driver.save();
     res.status(200).json({
       success: true,
-      data: { tracking, selectedOption, msg: "Order Successfully Assigned!" },
+      data: { tracking, selectedOption, price: order.fuel_price, attachment: order.attachments, msg: "Order Successfully Assigned!" },
     });
     res.end();
     // const notificationDesc = `${Order._id} has been assigned to driver ${req.user.name}!`;
