@@ -13,6 +13,9 @@ const EmptyTankModel = require("../Models/EmptyTank.schema");
 const Fuel = require("../Models/Fuel.schema");
 const TruckModel = require("../Models/Truck.schema");
 const DriverRejectedModel = require('../Models/DriverRejectedOrders.schema')
+const google_api_url = process.env.GOOGLE_MAPS_API
+const google_api_key = process.env.GOOGLE_MAPS_KEY
+
 const { log } = require("console");
 
 const stationOrders = async (req, res) => {
@@ -382,17 +385,17 @@ const ApproveOrder = async (req, res) => {
     const existingOrder = await Order.findOne({ orderNumber: order_number });
 
     if (!existingOrder) {
-      return res.status(404).json({ success: false, error: 'Order not found.' });
+      return res.status(404).json({ success: false, error: {msg: 'Order not found.'} });
     }
 
     // Check if the order is already approved
     if (existingOrder.status === 4) {
-      return res.status(400).json({ success: false, error: 'Order is already approved.' });
+      return res.status(400).json({ success: false, error: {msg: 'Order is already approved.'} });
     }
 
     // Check if the order is assigned (status 1)
     if (existingOrder.status !== 1) {
-      return res.status(400).json({ success: false, error: 'Order is not assigned for delivery yet.' });
+      return res.status(400).json({ success: false, error: {msg: 'Order is not assigned for delivery yet.'} });
     }
 
     let attachmentName = "signed-receiving-receipt";
@@ -734,6 +737,8 @@ const driverAssignOrder = async (req, res) => {
       // Run query on Station model
       selectedOption = await Station.findById(selectedOrder.stationId);
     }
+
+      console.log('selectedOption.latitude, selectedOption.latitude', selectedOption.latitude, selectedOption.latitude)
     
      if (!order)
       return res.status(200).json({
