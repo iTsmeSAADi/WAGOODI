@@ -429,7 +429,7 @@ const verifySuperAdmin = async (req, res, next) => {
 const verifyAdmin = async (req, res, next) => {
   try {
     const user = req.user;
-    if (user.role == 0 || user.role == 1 || user.role == 2) {
+    if (user.role == 0 || user.role == 1 || user.role == 2 || user.role == 3) {
       req.user = user;
       next();
       return;
