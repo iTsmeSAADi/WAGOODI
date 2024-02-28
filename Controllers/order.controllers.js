@@ -426,7 +426,7 @@ const ApproveOrder = async (req, res) => {
     return res.status(200).json({ success: true, message: 'Order approved successfully.', order: existingOrder });
   } catch (error) {
     console.error('Error in ApproveOrder:', error);
-    return res.status(500).json({ success: false, error: 'Internal server error.' });
+    return res.status(500).json({ success: false, error: {msg: 'Internal server error.'} });
   }
 };
 
