@@ -286,7 +286,7 @@ const createOrder = async (req, res) => {
     fromOption === 0 ? [{ name: attachmentName, url: attachmentUrl }] : [];
 
     stations[0].status = 1;
-
+    console.log('from is', from)
     const order = await new Order({
       stations,
       orderManagerId,
