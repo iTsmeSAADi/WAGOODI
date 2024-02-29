@@ -225,6 +225,9 @@ const createOrder = async (req, res) => {
         });
 
       from.address = vendor.address;
+      from.latitude = vendor.latitude;
+      from.longitude = vendor.longitude;
+
       
       attachmentName = "order-receipt";
       attachmentUrl = await firebase_methods.uploadOrderAttachment(
@@ -259,6 +262,8 @@ const createOrder = async (req, res) => {
         });
 
       from.address = station.address;
+      from.latitude = station.latitude;
+      from.longitude = station.longitude;
 
       if (driverId) {
         const driverTruck = await TruckModel.findOne({ driverId });
