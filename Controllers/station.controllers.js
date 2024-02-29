@@ -9,7 +9,7 @@ const mongoose = require("mongoose");
 const { createError, successMessage } = require("../Utils/responseMessage");
 const EmptyTankModel = require("../Models/EmptyTank.schema");
 
-const getCompanyStations = async (req, res) => {
+const getAppCompanyStations = async (req, res) => {
   const { companyId } = req.body;
   if (!companyId)
     return res
@@ -76,6 +76,183 @@ const getCompanyStations = async (req, res) => {
           active: true, // Filter only active stations
         },
       },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          address: 1,
+          phone: 1,
+          favorite: 1,
+          createdAt: 1,
+          latitude: 1,
+          longitude: 1,
+          active: 1,
+          latestOrder: 1,
+          populatedFuels: {
+            $map: {
+              input: "$populatedFuels",
+              as: "fuel",
+              in: {
+                $mergeObjects: [
+                  "$$fuel",
+                  {
+                    percentageDifference: {
+                      $cond: {
+                        if: { $eq: ["$$fuel.max_value", 0] },
+                        then: 1, // Avoid division by zero
+                        else: {
+                          $abs: {
+                            $divide: [
+                              { $subtract: ["$$fuel.value", "$$fuel.max_value"] },
+                              { $abs: "$$fuel.max_value" },
+                            ],
+                          },
+                        },
+                      },
+                    },
+                    isMinPercentageDifference: {
+                      $eq: [
+                        "$$fuel.percentageDifference",
+                        {
+                          $min: "$populatedFuels.percentageDifference",
+                        },
+                      ],
+                    },
+                    color: {
+                      $switch: {
+                        branches: [
+                          {
+                            case: { $lte: ["$$fuel.percentageDifference", 0.3] },
+                            then: "#C93D33",
+                          },
+                          {
+                            case: { $lte: ["$$fuel.percentageDifference", 0.5] },
+                            then: "#6877DC",
+                          },
+                          {
+                            case: { $gte: ["$$fuel.percentageDifference", 0.5] },
+                            then: "#2EB100",
+                          },
+                        ],
+                        default: "#000000",
+                      },
+                      
+                      
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+      
+      {
+        "$addFields": {
+          "populatedFuels": {
+            "$map": {
+              "input": "$populatedFuels",
+              "as": "fuel",
+              "in": {
+                "$mergeObjects": [
+                  "$$fuel",
+                  {
+                    "color": {
+                      "$cond": {
+                        "if": { "$lte": ["$$fuel.percentageDifference", 0.3] },
+                        "then": "#C93D33",
+                        "else": {
+                          "$cond": {
+                            "if": { "$lte": ["$$fuel.percentageDifference", 0.5] },
+                            "then": "#6877DC",
+                            "else": "#2EB100"
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+      
+    ]).exec();
+    successMessage(res, stations, null);
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ success: false, error: error.message });
+  }
+};
+
+const getSiteCompanyStations = async (req, res) => {
+  const { companyId } = req.body;
+  if (!companyId)
+    return res
+      .status(200)
+      .json({ success: false, error: { msg: "companyId is undefined!" } });
+  try {
+    const stations = await Station.aggregate([
+      {
+        $match: {
+          companyId: new mongoose.Types.ObjectId(companyId),
+        },
+      },
+      {
+        $lookup: {
+          from: "fuels",
+          localField: "fuels",
+          foreignField: "_id",
+          as: "populatedFuels",
+        },
+      },
+      {
+        $lookup: {
+          from: "orders",
+          let: { stationId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $in: ["$$stationId", "$stations"] },
+              },
+            },
+            {
+              $sort: { createdAt: -1 },
+            },
+            {
+              $limit: 1,
+            },
+          ],
+          as: "latestOrder",
+        },
+      },
+      {
+        $unwind: {
+          path: "$_id",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $group: {
+          _id: "$_id",
+          name: { $first: "$name" },
+          populatedFuels: { $first: "$populatedFuels" },
+          latestOrder: { $first: "$latestOrder" },
+          address: { $first: "$address" },
+          phone: { $first: "$phone" },
+          favorite: { $first: "$favorite" },
+          latitude: { $first: "$latitude" },
+          longitude: { $first: "$longitude" },
+          createdAt: { $first: "$createdAt" },
+          active: { $first: "$active" },
+        },
+      },
+      // {
+      //   $match: {
+      //     active: true, // Filter only active stations
+      //   },
+      // },
       {
         $project: {
           _id: 1,
@@ -674,7 +851,8 @@ module.exports = {
   createStationSale,
   stationRecords,
   queryStation,
-  getCompanyStations,
+  getAppCompanyStations,
+  getSiteCompanyStations,
   stationSalesOrders,
   getStation,
   adminQueryStation,

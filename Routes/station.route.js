@@ -5,7 +5,8 @@ const station = require("../Controllers/station.controllers")
 const router = require("express").Router();
 
 router.post("/", verifyUserCookie, auth.verifyApproved, verifyAdmin, station.createStation)
-router.post("/all", verifyUserCookie, auth.verifyApproved, auth.verifyAdminAndStationManager, verifyCompanyId, station.getCompanyStations)
+router.post("/app/all", verifyUserCookie, auth.verifyApproved, auth.verifyAdminAndStationManager, verifyCompanyId, station.getAppCompanyStations)
+router.post("/site/all", verifyUserCookie, auth.verifyApproved, auth.verifyAdminAndStationManager, verifyCompanyId, station.getSiteCompanyStations)
 router.post("/sale", verifyUserCookie, auth.verifyApproved, auth.verifyActiveStation, station.createStationSale)
 router.patch("/update", verifyUserCookie, auth.verifyApproved, verifyStationId, station.updateStation)
 router.get("/:id", verifyUserCookie, station.getStation)
