@@ -58,7 +58,10 @@ const OrderSchema = new mongoose.Schema({
     },
     stationId: { type: mongoose.Types.ObjectId, ref: "stations" },
     vendorId: { type: mongoose.Types.ObjectId, ref: "vendors" },
-    address: {type: String, required: true}
+    address: {type: String, required: true},
+    // Add latitude and longitude properties
+    latitude: { type: Number },
+    longitude: { type: Number },
   },
   createdAt: {type: Number, default: Math.floor(Date.now() / 1000)},
   arrival_date: { type: Number },
