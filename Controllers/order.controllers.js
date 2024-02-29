@@ -225,6 +225,10 @@ const createOrder = async (req, res) => {
         });
 
       from.address = vendor.address;
+      from.latitude = vendor.latitude;
+      from.longitude = vendor.longitude;
+
+      
       attachmentName = "order-receipt";
       attachmentUrl = await firebase_methods.uploadOrderAttachment(
         companyId,
@@ -258,6 +262,8 @@ const createOrder = async (req, res) => {
         });
 
       from.address = station.address;
+      from.latitude = station.latitude;
+      from.longitude = station.longitude;
 
       if (driverId) {
         const driverTruck = await TruckModel.findOne({ driverId });
@@ -738,7 +744,7 @@ const driverAssignOrder = async (req, res) => {
       selectedOption = await Station.findById(selectedOrder.stationId);
     }
 
-      console.log('selectedOption.latitude, selectedOption.latitude', selectedOption.latitude, selectedOption.latitude)
+      console.log('selectedOption.latitude, selectedOption.latitude', selectedOption.latitude, selectedOption.latitude, order.stations, selectedOrder)
     
      if (!order)
       return res.status(200).json({
