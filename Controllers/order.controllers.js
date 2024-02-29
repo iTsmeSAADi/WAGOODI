@@ -15,6 +15,7 @@ const TruckModel = require("../Models/Truck.schema");
 const DriverRejectedModel = require('../Models/DriverRejectedOrders.schema')
 const google_api_url = process.env.GOOGLE_MAPS_API
 const google_api_key = process.env.GOOGLE_MAPS_KEY
+const axios = require('axios')
 
 const { log } = require("console");
 
@@ -696,116 +697,149 @@ const driverAcceptOrder = async (req, res) => {
   }
 };
 
+// Function to calculate distance between two points using Google Maps Distance Matrix API
+async function getDistance(origin, destination) {
+  const apiUrl = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${origin.latitude},${origin.longitude}&destinations=${destination.latitude},${destination.longitude}&key=${google_api_key}`;
+
+  try {
+      const response = await axios.get(apiUrl);
+      
+      // Check if the expected properties exist in the response
+      if (
+          response.data &&
+          response.data.rows &&
+          response.data.rows[0] &&
+          response.data.rows[0].elements &&
+          response.data.rows[0].elements[0] &&
+          response.data.rows[0].elements[0].distance &&
+          response.data.rows[0].elements[0].distance.value
+      ) {
+          const distance = response.data.rows[0].elements[0].distance.value;
+          return distance;
+      } else {
+          console.error('Invalid API response:', response.data);
+          return Infinity; // Return a very large distance in case of an error
+      }
+  } catch (error) {
+      console.error('Error fetching distance:', error.message);
+      return Infinity; // Return a very large distance in case of an error
+  }
+}
+
+
+// Function to sort stations based on their distance from selectedOrder
+async function sortDataByDistance(order, selectedOrder) {
+  const stations = order.stations;
+
+  // Calculate distances for each station
+  const distances = await Promise.all(stations.map(station => getDistance(station, selectedOrder)));
+
+  // Create an array of objects with station and distance
+  const stationDistances = stations.map((station, index) => ({
+      station,
+      distance: distances[index]
+  }));
+
+  // Sort the array based on distance in ascending order
+  stationDistances.sort((a, b) => a.distance - b.distance);
+
+  // Extract sorted stations
+  const sortedStations = stationDistances.map(item => item.station);
+
+  return sortedStations;
+}
+
 const driverAssignOrder = async (req, res) => {
   const { id, driverId, location } = req.body;
+
   const existingRejectionEntry = await DriverRejectedModel.findOne({ order: id, driverId: driverId });
   if (existingRejectionEntry) {
-    return res.status(400).json({ error: 'This order has been rejected by the driver' });
+      return res.status(400).json({ error: 'This order has been rejected by the driver' });
   }
 
-  const canceledEnrty = await Order.findOne({ _id: id, status: 5 });
-  if (canceledEnrty) {
-    return res.status(400).json({ error: 'This order has been canceled by the driver' });
+  const canceledEntry = await Order.findOne({ _id: id, status: 5 });
+  if (canceledEntry) {
+      return res.status(400).json({ error: 'This order has been canceled by the driver' });
   }
 
-  const io = req?.app?.io
+  const io = req?.app?.io;
   if (!id)
-    return res
-      .status(200)
-      .json({ success: false, error: { message: "id undefined!" } });
+      return res.status(200).json({ success: false, error: { message: "id undefined!" } });
   if (!driverId)
-    return res
-      .status(200)
-      .json({ success: false, error: { message: "driverId undefined!" } });
+      return res.status(200).json({ success: false, error: { message: "driverId undefined!" } });
+
   try {
-    const driver = await Account.findById(driverId);
-    if (!driver)
-      return res.status(200).json({
-        success: false,
-        error: { message: "driver with such id not found!" },
-      });
-      driver.on_going = false;
-    // if (driver.on_going)
-    //   return res.status(200).json({
-    //     success: false,
-    //     error: { message: "Driver already have an order to complete!" },
-    //   });
-    var selectedOption;
+      const driver = await Account.findById(driverId);
+      if (!driver)
+          return res.status(200).json({
+              success: false,
+              error: { message: "driver with such id not found!" },
+          });
 
-    const order = await Order.findOne({ _id: id });
-    console.log('order', order);
-    
-    const selectedOrder = order.from;
-    
-    if (selectedOrder.option === 0) {
-      // Run query on Vendor model
-      selectedOption = await Vendor.findById(selectedOrder.vendorId);
-    } else if (selectedOrder.option === 1) {
-      // Run query on Station model
-      selectedOption = await Station.findById(selectedOrder.stationId);
-    }
+      var selectedOption;
 
-      console.log('selectedOption.latitude, selectedOption.latitude', selectedOption.latitude, selectedOption.latitude, order.stations, selectedOrder)
-    
-     if (!order)
-      return res.status(200).json({
-        success: false,
-        error: { message: "Order with such id not found!" },
+      const order = await Order.findOne({ _id: id });
+      console.log('order', order);
+
+      const selectedOrder = order.from;
+
+      if (selectedOrder.option === 0) {
+          selectedOption = await Vendor.findById(selectedOrder.vendorId);
+      } else if (selectedOrder.option === 1) {
+          selectedOption = await Station.findById(selectedOrder.stationId);
+      }
+
+      console.log('selectedOption.latitude, selectedOption.latitude', selectedOption.latitude, selectedOption.latitude, order.stations, selectedOrder);
+
+      if (!order)
+          return res.status(200).json({
+              success: false,
+              error: { message: "Order with such id not found!" },
+          });
+
+      console.log(typeof order.companyId);
+      console.log(driver.companyId);
+      console.log(order.companyId == driver.companyId);
+
+      const driverTruck = await TruckModel.findOne({ driverId });
+
+      order.driverId = driverId;
+      order.status = 1;
+      const tracking = await new Tracking({
+          driverId,
+          orderId: id,
+          location,
+      }).save();
+      order.trackingId = tracking._id;
+      order.startedAt ? (order.startedAt = Math.floor(Date.now() / 1000)) : "";
+      order.canceled ? (order.canceled = null) : "";
+      await order.save();
+      driver.on_going = true;
+      await driver.save();
+
+      // Sort stations by distance
+      const sortedData = await sortDataByDistance(order, selectedOrder);
+
+      res.status(200).json({
+          success: true,
+          data: {
+              tracking,
+              selectedOption,
+              price: order.fuel_price,
+              attachment: order.attachments,
+              sortedData,
+              msg: "Order Successfully Assigned!"
+          },
       });
-      console.log(typeof order.companyId)
-      console.log(driver.companyId)
-      console.log(order.companyId == driver.companyId)
-      // if(!order.companyId.equals(driver.companyId)) return createError(res, 400, "order and driver company does not match!")
-    const driverTruck = await TruckModel.findOne({ driverId });
-    // if(!driverTruck) return createError(res, 400, "driver has no truck under his arsenal!")
-    // if (driverTruck.capacity < order.fuel_value)
-    //   return createError(
-    //     res,
-    //     400,
-    //     "driver truck capacity is lower then the order fuel value!"
-    //   );
-    order.driverId = driverId;
-    order.status = 1;
-    const tracking = await new Tracking({
-      driverId,
-      orderId: id,
-      location,
-    }).save();
-    order.trackingId = tracking._id;
-    order.startedAt ? (order.startedAt = Math.floor(Date.now() / 1000)) : "";
-    order.canceled ? (order.canceled = null) : "";
-    await order.save();
-    driver.on_going = true;
-    await driver.save();
-    res.status(200).json({
-      success: true,
-      data: { tracking, selectedOption, price: order.fuel_price, attachment: order.attachments, msg: "Order Successfully Assigned!" },
-    });
-    res.end();
-    // const notificationDesc = `${Order._id} has been assigned to driver ${req.user.name}!`;
-    // await Promise.all(
-    //   order.stations.map(async ({ id: stationId }) => {
-    //     const notification = await new Notification({
-    //       orderId: order._id,
-    //       companyId: order.companyId,
-    //       type: 1,
-    //       description: notificationDesc,
-    //       accountId: driverId,
-    //       stationId: stationId,
-    //     }).save();
-    //     io.to("/admin")
-    //       .to("/companyAdmin-" + order.companyId)
-    //       .to("/orderManager-" + order.companyId)
-    //       .to("/stationManager-" + stationId)
-    //       .to("/driver-" + driverId)
-    //       .emit("notification-message", notification);
-    //   })
-    // );
+
+      res.end();
+
   } catch (error) {
-    console.log(error);
-    createError(res, 400, error.message)
+      console.log(error);
+      createError(res, 400, error.message);
   }
 };
+
 
 
 const driverRejectOrder = async (req, res) => {
