@@ -287,6 +287,7 @@ const createOrder = async (req, res) => {
 
     stations[0].status = 1;
     console.log('from is', from)
+    // create order document
     const order = await new Order({
       stations,
       orderManagerId,
