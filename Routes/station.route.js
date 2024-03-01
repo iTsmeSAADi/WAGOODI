@@ -8,7 +8,7 @@ router.post("/", verifyUserCookie, auth.verifyApproved, verifyAdmin, station.cre
 router.post("/app/all", verifyUserCookie, auth.verifyApproved, auth.verifyAdminAndStationManager, verifyCompanyId, station.getAppCompanyStations)
 router.post("/site/all", verifyUserCookie, auth.verifyApproved, auth.verifyAdminAndStationManager, verifyCompanyId, station.getSiteCompanyStations)
 router.post("/sale", verifyUserCookie, auth.verifyApproved, auth.verifyActiveStation, station.createStationSale)
-router.patch("/update", verifyUserCookie, auth.verifyApproved, verifyStationId, station.updateStation)
+router.patch("/update", verifyUserCookie, auth.verifyApproved, station.updateStation)
 router.get("/:id", verifyUserCookie, station.getStation)
 // router.get("/monthly/:id", verifyUserCookie, verifyStationId)
 // router.post("/query/:id", verifyUserCookie, verifyStationId)
