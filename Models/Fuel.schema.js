@@ -1,7 +1,7 @@
 const mongoose = require("mongoose")
 
 const FuelTypeSchema = mongoose.Schema({
-    type: {type: Number, required: true},
+    type: {type: Number, enum: [0, 1, 2], required: true},
     type_name: {type: String, required: true},
     price_litre: {type: Number, required: true},
     value: {type: Number, min: 0},

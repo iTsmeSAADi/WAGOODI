@@ -321,11 +321,14 @@ const createOrder = async (req, res) => {
 
       console.log("IO ", io);
       console.log('order company id', companyId)
+
+      console.log('companyId', companyId)
       
       io.to(`/company/drivers-${companyId}`).emit("notification-message", {
         notification: companyDriversNotification,
         order: order,
       });
+      console.log('OrderData', order)
     }
 
     const notificationsCreation = await Promise.all(
@@ -751,6 +754,8 @@ async function sortDataByDistance(order, selectedOrder) {
 
 const driverAssignOrder = async (req, res) => {
   const { id, driverId, location } = req.body;
+
+  console.log(req.body)
 
   const existingRejectionEntry = await DriverRejectedModel.findOne({ order: id, driverId: driverId });
   if (existingRejectionEntry) {

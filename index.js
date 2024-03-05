@@ -294,6 +294,8 @@ io.on("connection", async (socket) => {
           "/driver-" + user._id,
           `/company/drivers-${user.companyId._id}`,
         ]);
+
+        console.log('user.companyId._id', user.companyId._id)
         
         const twentyFourHoursAgo = Math.floor(Date.now() / 1000) - 24 * 60 * 60;
         

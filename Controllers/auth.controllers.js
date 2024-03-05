@@ -90,16 +90,12 @@ const signUpAccount = async (req, res) => {
 
 const signIn = async (req, res, next) => {
   const { email, password } = req.body;
-
+  console.log(email, password)
   if (!email) {
-    return res
-      .status(200)
-      .json({ success: false, error: { msg: "email field is undefined!" } });
+    return res.status(200).json({ success: false, error: { msg: "email field is undefined!" } });
   }
   if (!password) {
-    return res
-      .status(200)
-      .json({ success: false, error: { msg: "email field is undefined!" } });
+    return res.status(200).json({ success: false, error: { msg: "password field is undefined!" } });
   }
 
   try {
