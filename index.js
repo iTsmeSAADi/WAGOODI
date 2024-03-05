@@ -251,6 +251,7 @@ io.on("connection", async (socket) => {
   console.log("connection established!");
   try {
     const { secretkey, token } = socket.handshake.headers;
+    console.log(secretkey, token)
     const { _doc: user } = jwt.verify(token, PRIVATE_KEY);
     console.log("USER : ", user);
     if (secretkey !== SOCKET_SECRET_KEY || !token || !user) {

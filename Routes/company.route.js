@@ -13,5 +13,6 @@ router.patch("/update", upload.single("image"), auth.verifyUserCookie, auth.veri
 router.patch("/company-approved", auth.verifyUserCookie, auth.verifySuperAdmin, company.companyApproved)
 router.patch("/company-reject", auth.verifyUserCookie, auth.verifySuperAdmin, company.companyRejected)
 router.post("/send-report",  upload.single("attachment"), auth.verifyUserCookie, auth.verifyAdminAndCompanyAdmin, company.sendReportMail)
+router.post("/fuel/update", auth.verifyUserCookie, auth.verifyAdmin, company.updateCompanyFuelDispenser)
 
 module.exports = router;

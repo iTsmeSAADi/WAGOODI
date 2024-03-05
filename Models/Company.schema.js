@@ -6,6 +6,7 @@ const CompanySchema  = new mongoose.Schema({
     name: {type: String, required: true, unique: true},
     phone: {type: String, required: true},
     email: {type: String, required: true},
+    fuels: [{type: mongoose.Types.ObjectId, ref: "fuel"}],
     address: {type: String, required: true},
     crn_number: {type: String, required: true},
     tax_number: {type: String, required: true},

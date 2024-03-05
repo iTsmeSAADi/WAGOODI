@@ -1,5 +1,6 @@
 const Account = require("../Models/Account.schema");
 const Company = require("../Models/Company.schema");
+const Fuel = require('../Models/Fuel.schema')
 const bcrypt = require("bcrypt");
 const { uploadCompanyFile } = require("../Utils/firebase");
 const { createError, successMessage } = require("../Utils/responseMessage");
@@ -59,6 +60,49 @@ const signUpCompany = async (req, res) => {
     res.status(200).json({ success: false, error });
   }
 };
+
+const updateCompanyFuelDispenser = async (req, res) => {
+  const { fuelId, updateType, updateTypeName } = req.body;
+
+  try {
+    // Find the fuel by fuelId
+    const fuel = await Fuel.findById(fuelId);
+
+    if (!fuel) {
+      return res.status(404).json({
+        success: false,
+        error: "Fuel not found",
+      });
+    }
+
+    // Update the fuel values
+    fuel.type = updateType;
+    fuel.type_name = updateTypeName;
+
+    // Save the updated fuel to the database
+    await fuel.save();
+
+    // Optionally, if you need to update a station with the fuel, include that logic here
+    // const updatedStation = await updateStationWithFuel(station, fuel);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        message: "Fuel values updated successfully",
+        updatedFuel: fuel,
+        // updatedStation: updatedStation // Uncomment if updating a station as well
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      error: "Internal Server Error",
+    });
+  }
+};
+
+
 
 const updateCompany = async (req, res) => {
   const { companyId, payload } = req.body;
@@ -506,4 +550,5 @@ module.exports = {
   companiesInfo,
   companyEmptyFuelRecords,
   sendReportMail,
+  updateCompanyFuelDispenser
 };

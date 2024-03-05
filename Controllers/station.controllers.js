@@ -388,7 +388,7 @@ const updateStaionFuelDispenser = async (req, res) => {
 
     // Update fuel values for the station
     for (const fuelUpdate of updateData) {
-      const { fuelId, updatedValue, updatePriceLitre, updateType, updateMaxValue } = fuelUpdate;
+      const { fuelId, updatedValue, updatePriceLitre, updateType, updateMaxValue, updateTypeName } = fuelUpdate;
 
       // Find the fuel by fuelId
       const fuel = await Fuel.findById(fuelId);
@@ -458,12 +458,13 @@ const createStation = async (req, res) => {
     //create fuels record in database
     const fuelsId = await Promise.all(
       fuels.map(async (fuel) => {
-        const { type, price_litre, value, max_value } = fuel;
+        const { type, price_litre, value, max_value, type_name } = fuel;
         const savedFuel = await new Fuel({
           type,
           price_litre,
           value,
           max_value,
+          type_name
         }).save();
         return savedFuel._id;
       })
@@ -532,11 +533,12 @@ const addStationFuelDispenser = async (req, res) => {
   const { payload } = req.body;
 
   try {
-    if (!payload || !payload.max_value || !payload.price_litre || !payload.type || !payload.value) {
+    if (!payload || !payload.max_value || !payload.price_litre || !payload.type || !payload.value || !payload.type_name) {
       throw new Error('Invalid payload. Please provide all required fields.');
     }
 
     const newFuel = new Fuel({
+      type_name: payload.type_name,
       max_value: payload.max_value,
       price_litre: payload.price_litre,
       type: payload.type,
