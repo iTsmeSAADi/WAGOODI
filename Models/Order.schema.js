@@ -70,7 +70,7 @@ const OrderSchema = new mongoose.Schema({
   startedAt: {type: Number},
   driverTip: {type: Number},
   required_volume: { type: Number, required: true },
-  issued_volume: { type: Number, required: true },
+  issued_volume: { type: Number, required: function() { return this.status === 4; } },
   received_volume: { type: Number, required: true},
 });
 
