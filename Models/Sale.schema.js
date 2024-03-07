@@ -6,7 +6,7 @@ const SaleSchema = new mongoose.Schema({
     fuel_value: {type: Number}, 
     createdAt: {type: Number, default: Math.floor(Date.now() / 1000)},
     active: {type: Boolean, default: true},
-    fuel_type: {type: Number, enum: [0, 1, 2], required: true}
+    fuel_type: {type: Number, enum: [0, 1, 2], required: true},
 })
 
 const Sale = mongoose.model("sale", SaleSchema);

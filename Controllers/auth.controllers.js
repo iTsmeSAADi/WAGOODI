@@ -1,6 +1,7 @@
 const { sendMail } = require("../Utils/mail");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const Sale = require('../Models/Sale.schema')
 const Account = require("../Models/Account.schema");
 const otpGenerator = require("otp-generator");
 const OTP = require("../Models/OTP.schema");
@@ -87,6 +88,10 @@ const signUpAccount = async (req, res) => {
     res.status(400).json({ success: false, error });
   }
 };
+
+
+
+
 
 const signIn = async (req, res, next) => {
   const { email, password } = req.body;
@@ -705,5 +710,5 @@ module.exports = {
   verifyAdminAndStationManager,
   verifyIsLoggedIn,
   getAllDrivers,
-  deleteUser
+  deleteUser,
 };

@@ -69,9 +69,9 @@ const OrderSchema = new mongoose.Schema({
   reciept_number: {type: String, required: true},
   startedAt: {type: Number},
   driverTip: {type: Number},
-  required_volume: { type: Number, required: function() { return this.status === 4; } },
-  issued_volume: { type: Number, required: function() { return this.status === 4; } },
-  received_volume: { type: Number, required: function() { return this.status === 4; } },
+  required_volume: { type: Number, required: true },
+  issued_volume: { type: Number, required: true },
+  received_volume: { type: Number, required: true},
 });
 
 const Order = mongoose.model("order", OrderSchema);

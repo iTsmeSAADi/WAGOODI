@@ -53,6 +53,9 @@ const createOrder = async (req, res) => {
       reciept_number,
       expected_arrival,
       driverTip,
+      requiredVolume,
+      issuedVolume,
+      receivedVolume
     } = req.body;
 
     console.log('req.body', req.body);
@@ -297,6 +300,9 @@ const createOrder = async (req, res) => {
       fuel_type: parseInt(fuel_type),
       fuel_value,
       fuel_price,
+      required_volume: requiredVolume,
+      issued_volume: issuedVolume,
+      received_volume: receivedVolume,
       to,
       from,
       reciept_number,

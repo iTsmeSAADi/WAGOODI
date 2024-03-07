@@ -14,7 +14,6 @@ router.patch("/change-password", auth.verifyUserCookie, auth.verifyUser, auth.ch
 router.patch("/update/", auth.verifyUserCookie, auth.verifyAdmin, auth.updateUser)
 router.delete("/user/:id", auth.verifyUserCookie, auth.deleteUser)
 router.post("/list/", auth.verifyUserCookie, auth.verifyAdminAndCompanyAdmin, auth.listAllUsers)
-// router.post("/list/sales-manager", auth.verifyUserCookie, auth.verifyAdminAndCompanyAdmin, auth.listAllSalesManagers)
 router.post("/", auth.verifyUserCookie, auth.verifySuperAdmin, auth.getUser)
 router.get("/getAllDrivers", auth.verifyUserCookie, auth.getAllDrivers)
 router.get("/check-token", auth.verifyUserCookie, auth.accessTokenExpired)
