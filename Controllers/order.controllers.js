@@ -1049,6 +1049,7 @@ const driverRecievedOrder = async (req, res) => {
 
 const driverDelieveredOrder = async (req, res) => {
   const { driverId, orderId, stationId } = req.body;
+  console.log("req.body", req.body)
   const io = req?.app?.io
   if (!driverId)
     return res
