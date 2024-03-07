@@ -7,7 +7,7 @@ const AccountSchema = new mongoose.Schema({
     on_going: {type: Boolean, default: false},  // if driver then on_going is specified, meaning he is assigned order or not.
     email: {type: String, required: true},
     password: {type: String, required: true},
-    privilage: {type: Number},
+    privilage: {type: Number}, // 1: OrderManager, 0: SalesManager
     approved: {type: Boolean},
     name: {type: String, required: true},
     phone_number: {type: Number},

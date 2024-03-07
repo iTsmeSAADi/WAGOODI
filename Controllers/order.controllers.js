@@ -961,6 +961,7 @@ const getDriverOrderReciept = async (req, res) => {
 
 const driverRecievedOrder = async (req, res) => {
   const { driverId, orderId, stationId } = req.body;
+  console.log('req.body', req.body)
   const attachment = req.file.buffer;
   const mimetype = req?.file?.mimetype;
   const io = req?.app?.io
@@ -1025,21 +1026,21 @@ const driverRecievedOrder = async (req, res) => {
     await order.save();
     res.status(200).json({ success: true, data: order });
     res.end();
-    const notificationDesc = `${Order._id} for station ${stationName} has been recieved by driver ${req.user.name}!`;
+    // const notificationDesc = `${Order._id} for station ${stationName} has been recieved by driver ${req.user.name}!`;
 
-    const notification = await new Notification({
-      orderId: order._id,
-      companyId: order.companyId,
-      type: 1,
-      description: notificationDesc,
-      stationId: stationId,
-    }).save();
-    io.to("/admin")
-      .to("/companyAdmin-" + order.companyId)
-      .to("/orderManager-" + order.companyId)
-      .to("/stationManager-" + stationId)
-      .to("/driver-" + driverId)
-      .emit("notification-message", notification);
+    // const notification = await new Notification({
+    //   orderId: order._id,
+    //   companyId: order.companyId,
+    //   type: 1,
+    //   description: notificationDesc,
+    //   stationId: stationId,
+    // }).save();
+    // io.to("/admin")
+    //   .to("/companyAdmin-" + order.companyId)
+    //   .to("/orderManager-" + order.companyId)
+    //   .to("/stationManager-" + stationId)
+    //   .to("/driver-" + driverId)
+    //   .emit("notification-message", notification);
   } catch (error) {
     console.log(error);
     res.status(400).json({ success: false, error: error.message });
