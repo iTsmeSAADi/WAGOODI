@@ -19,6 +19,8 @@ const OrderSchema = new mongoose.Schema({
       // Add latitude and longitude properties
       latitude: { type: Number },
       longitude: { type: Number },
+      required_volume: { type: Number, required: true },
+      paid_amount: {type: Number, required: true},      
     },
   ],
   orderNumber: {type: Number, default: Math.floor(Math.random() * 90000) + 1000},
@@ -69,7 +71,6 @@ const OrderSchema = new mongoose.Schema({
   reciept_number: {type: String, required: true},
   startedAt: {type: Number},
   driverTip: {type: Number},
-  required_volume: { type: Number, required: true },
   issued_volume: { type: Number, required: function() { return this.status === 4; } },
   received_volume: { type: Number, required: true},
 });

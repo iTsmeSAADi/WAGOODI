@@ -1053,10 +1053,10 @@ const driverRecievedOrder = async (req, res) => {
   }
 };
 
-const driverDelieveredOrder = async (req, res) => {
+const driverDeliveredOrder = async (req, res) => {
   const { driverId, orderId, stationId } = req.body;
-  console.log("req.body", req.body)
-  const io = req?.app?.io
+  console.log("req.body", req.body);
+  const io = req?.app?.io;
   if (!driverId)
     return res
       .status(200)
@@ -1087,9 +1087,9 @@ const driverDelieveredOrder = async (req, res) => {
         success: false,
         error: { message: "Driver is not assigned such order!" },
       });
-    order.status = 3;
     const stations = order.stations;
     let stationName;
+    let allStationsDelivered = true; // Flag to check if all stations are delivered
     let stationsData = await Promise.all(
       stations.map((station, index) => {
         if (station?.id?._id != stationId) return station;
@@ -1104,36 +1104,52 @@ const driverDelieveredOrder = async (req, res) => {
         return station;
       })
     );
+
+    // Check if all stations are delivered
+    stationsData.forEach((station) => {
+      if (station.status !== 3) {
+        allStationsDelivered = false;
+      }
+    });
+
     order.stations = stationsData;
+
+    // Update order status to 3 if all stations are delivered
+    if (allStationsDelivered) {
+      order.status = 3;
+    }
+
     await order.save();
     driver.on_going = false;
     await driver.save();
     res.status(200).json({ success: true, data: order });
     res.end();
-    const notificationDesc = `${Order._id} has been delievered to station ${stationName} by driver ${req.user.name}!`;
-    // await Promise.all(
-    //   order.stations.map(async ({ id: stationId }) => {
-    const notification = await new Notification({
-      orderId: order._id,
-      companyId: order.companyId,
-      type: 1,
-      description: notificationDesc,
-      accountId: driverId,
-      stationId: stationId,
-    }).save();
-    io.to("/admin")
-      .to("/companyAdmin-" + order.companyId)
-      .to("/orderManager-" + order.companyId)
-      .to("/stationManager-" + stationId)
-      .to("/driver-" + driverId)
-      .emit("notification-message", notification);
-    // })
-    // );
+    const notificationDesc = `${Order._id} has been delivered to station ${stationName} by driver ${req.user.name}!`;
+
+    // Create and emit notification only if order is fully delivered
+    if (allStationsDelivered) {
+      const notification = await new Notification({
+        orderId: order._id,
+        companyId: order.companyId,
+        type: 1,
+        description: notificationDesc,
+        accountId: driverId,
+        stationId: stationId,
+      }).save();
+
+      io.to("/admin")
+        .to("/companyAdmin-" + order.companyId)
+        .to("/orderManager-" + order.companyId)
+        .to("/stationManager-" + stationId)
+        .to("/driver-" + driverId)
+        .emit("notification-message", notification);
+    }
   } catch (error) {
     console.log(error);
     res.status(400).json({ success: false, error: error.message });
   }
 };
+
 
 // individual station order complete
 const stationManagerCompleteOrder = async (req, res) => {
@@ -1576,7 +1592,7 @@ module.exports = {
   updateOrderLocation,
   driverRecievedOrder,
   ManagerCompleteOrder,
-  driverDelieveredOrder,
+  driverDeliveredOrder,
   stationManagerCompleteOrder,
   orderManagerCompletedOrder,
   driverAcceptOrder,
