@@ -57,7 +57,7 @@ const OrderSchema = new mongoose.Schema({
       enum: [0, 1], // 0 : vendor, 1 : station
       required: true,
     },
-    fuelId: { type: mongoose.Types.ObjectId, required: true, ref: "fuel" },
+    fuelId: { type: mongoose.Types.ObjectId},
     stationId: { type: mongoose.Types.ObjectId, ref: "stations" },
     vendorId: { type: mongoose.Types.ObjectId, ref: "vendors" },
     address: {type: String, required: true},
