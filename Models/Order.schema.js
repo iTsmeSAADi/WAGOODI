@@ -14,13 +14,12 @@ const OrderSchema = new mongoose.Schema({
       name: String,
       pickedAt: { type: Number },
       deliveryTime: { type: Number },
-      fuel_value: { type: Number },
-      fuel_received: { type: Number },
       // Add latitude and longitude properties
       latitude: { type: Number },
       longitude: { type: Number },
       required_volume: { type: Number, required: true },
-      paid_amount: {type: Number, required: true},      
+      paid_amount: {type: Number, required: true},     
+      fuelId: { type: mongoose.Types.ObjectId, required: true, ref: "fuel" },
     },
   ],
   orderNumber: {type: Number, default: Math.floor(Math.random() * 90000) + 1000},
@@ -47,9 +46,9 @@ const OrderSchema = new mongoose.Schema({
     },
     userId: { type: mongoose.Types.ObjectId, ref: "account" },
   },
-  fuel_type: { type: Number, enum: [0, 1, 2], required: true }, // 0: 95, 1: 91, 2: D
+  // fuel_type: { type: Number, enum: [0, 1, 2], required: true }, // 0: 95, 1: 91, 2: D
   // fuel_value: { type: Number, required: true },
-  fuel_recieved: { type: Number},
+  // fuel_recieved: { type: Number},
   // fuel_price: { type: Number, required: true },
   to: { type: [String], required: false },
   from: {
@@ -58,6 +57,7 @@ const OrderSchema = new mongoose.Schema({
       enum: [0, 1], // 0 : vendor, 1 : station
       required: true,
     },
+    fuelId: { type: mongoose.Types.ObjectId, required: true, ref: "fuel" },
     stationId: { type: mongoose.Types.ObjectId, ref: "stations" },
     vendorId: { type: mongoose.Types.ObjectId, ref: "vendors" },
     address: {type: String, required: true},

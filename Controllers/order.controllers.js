@@ -45,17 +45,11 @@ const createOrder = async (req, res) => {
       orderManagerId,
       companyId,
       fuel_type,
-      fuel_value,
-      fuel_price,
-      fuel_id,
       driverId,
       from,
       reciept_number,
       expected_arrival,
       driverTip,
-      requiredVolume,
-      issuedVolume,
-      receivedVolume
     } = req.body;
 
     console.log('req.body', req.body);
@@ -251,20 +245,6 @@ const createOrder = async (req, res) => {
           error: { message: "No such station found!" },
         });
 
-      if (!fuel_id)
-        return res.status(400).json({
-          success: false,
-          error: { message: "fuel_id is required for a station!" },
-        });
-
-      const fuelIdMatch = station.fuels.includes(fuel_id);
-
-      if (!fuelIdMatch)
-        return res.status(400).json({
-          success: false,
-          error: { message: "Station does not contain such id for a fuel!" },
-        });
-
       from.address = station.address;
       from.latitude = station.latitude;
       from.longitude = station.longitude;
@@ -279,11 +259,6 @@ const createOrder = async (req, res) => {
             "Driver truck capacity is lower than the fuel value!"
           );
       }
-
-      await Fuel.findOneAndUpdate(
-        { _id: fuel_id },
-        { $inc: { value: fuel_value * -1 } }
-      );
     }
 
     const attachmentObj =
