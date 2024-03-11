@@ -48,9 +48,9 @@ const OrderSchema = new mongoose.Schema({
     userId: { type: mongoose.Types.ObjectId, ref: "account" },
   },
   fuel_type: { type: Number, enum: [0, 1, 2], required: true }, // 0: 95, 1: 91, 2: D
-  fuel_value: { type: Number, required: true },
+  // fuel_value: { type: Number, required: true },
   fuel_recieved: { type: Number},
-  fuel_price: { type: Number, required: true },
+  // fuel_price: { type: Number, required: true },
   to: { type: [String], required: false },
   from: {
     option: {
@@ -72,7 +72,7 @@ const OrderSchema = new mongoose.Schema({
   startedAt: {type: Number},
   driverTip: {type: Number},
   issued_volume: { type: Number, required: function() { return this.status === 4; } },
-  received_volume: { type: Number, required: true},
+  received_volume: { type: Number, required: function() { return this.status === 4; } },
 });
 
 const Order = mongoose.model("order", OrderSchema);
