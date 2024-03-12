@@ -20,6 +20,7 @@ const OrderSchema = new mongoose.Schema({
       required_volume: { type: Number, required: true },
       paid_amount: {type: Number, required: true},     
       fuelId: { type: mongoose.Types.ObjectId, required: true, ref: "fuel" },
+      value: {type: Number, ref: "fuel"}
     },
   ],
   orderNumber: {type: Number, default: Math.floor(Math.random() * 90000) + 1000},
@@ -46,7 +47,7 @@ const OrderSchema = new mongoose.Schema({
     },
     userId: { type: mongoose.Types.ObjectId, ref: "account" },
   },
-  // fuel_type: { type: Number, enum: [0, 1, 2], required: true }, // 0: 95, 1: 91, 2: D
+  fuel_type: { type: Number, enum: [0, 1, 2], required: true }, // 0: 95, 1: 91, 2: D
   // fuel_value: { type: Number, required: true },
   // fuel_recieved: { type: Number},
   // fuel_price: { type: Number, required: true },

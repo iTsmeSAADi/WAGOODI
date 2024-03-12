@@ -100,27 +100,6 @@ const createOrder = async (req, res) => {
         error: { message: "Attachment of order receipt file is undefined!" },
       });
 
-    const stationsCheck = stations.every(
-      (station) => station?.id && station?.address
-    );
-
-    if (!stationsCheck)
-      return res.status(200).json({
-        success: false,
-        error: {
-          message:
-            "Stations are not properly defined! Must contain id, address.",
-        },
-      });
-
-    // if (driverId && !location)
-    //   return res.status(200).json({
-    //     success: false,
-    //     error: {
-    //       msg: "For a driver to be assigned, the current location of the driver should be specified!",
-    //     },
-    //   });
-
     const io = req?.app?.io;
 
     let to = [];
@@ -142,6 +121,9 @@ const createOrder = async (req, res) => {
           return createError(res, 400, `Station ${station.name} is inactive!`);
 
         stations[index].address = station.address;
+        stations[index].fuel = station.fuels.find(
+          (fuel) => fuel.id === selectedStation.fuelId
+        );
         to.push(station.address);
 
         const prevOrder = await Order.findOne({
@@ -207,96 +189,105 @@ const createOrder = async (req, res) => {
 
     let attachmentName;
     let attachmentUrl;
-      console.log('fromOption', typeof fromOption)
-      if (fromOption === 0) {
-        console.log("entered here");
-        const vendor = await Vendor.findById(from?.vendorId);
-      
-        if (!vendor) {
-          return res.status(200).json({
-            success: false,
-            error: { message: "No such vendor found!" },
-          });
-        }
-      
-        // Check if the fuelId in 'from' matches one of the vendor's fuelIds
-        const isFuelIdValid = vendor.fuels.includes(from.fuelId);
-      
-        if (!isFuelIdValid) {
-          return res.status(200).json({
-            success: false,
-            error: { message: "Invalid fuelId!" },
-          });
-        }
-      
-        // If fuelId is valid, proceed with updating 'from' object
-        from.address = vendor.address;
-        from.latitude = vendor.latitude;
-        from.longitude = vendor.longitude;
-      
-        attachmentName = "order-receipt";
-        attachmentUrl = await firebase_methods.uploadOrderAttachment(
-          companyId,
-          attachmentName,
-          attachment,
-          mimetype
-        );
-      }
-      
-      if (fromOption === 1) {
-        const station = await Station.findById(from.stationId);
-      
-        if (!station) {
-          return res.status(400).json({
-            success: false,
-            error: { message: "No such station found!" },
-          });
-        }
-      
-        // Check if the fuelId in 'from' matches one of the station's fuels
-        const isFuelIdValid = station.fuels.includes(from.fuelId);
-      
-        if (!isFuelIdValid) {
-          return res.status(400).json({
-            success: false,
-            error: { message: "Invalid fuelId for the station!" },
-          });
-        }
-      
-        // Update 'from' object with station information
-        from.address = station.address;
-        from.latitude = station.latitude;
-        from.longitude = station.longitude;
-      
-        // Check additional conditions if driverId is provided
-        if (driverId) {
-          const driverTruck = await TruckModel.findOne({ driverId });
-      
-          if (!driverTruck) {
-            return res.status(400).json({
-              success: false,
-              error: { message: "No truck found for the provided driverId!" },
-            });
-          }
-      
-          if (from.fuel_value > driverTruck.capacity) {
-            return res.status(400).json({
-              success: false,
-              error: { message: "Driver truck capacity is lower than the fuel value!" },
-            });
-          }
-        }
-      }
-      
 
+    if (fromOption === 0) {
+      const vendor = await Vendor.findById(from?.vendorId);
+    
+      if (!vendor) {
+        return res.status(200).json({
+          success: false,
+          error: { message: "No such vendor found!" },
+        });
+      }
+    
+      // Check if the fuelId in 'from' matches one of the vendor's fuelIds
+      const isFuelIdValid = vendor.fuels.includes(from.fuelId);
+    
+      if (!isFuelIdValid) {
+        return res.status(200).json({
+          success: false,
+          error: { message: "Invalid fuelId!" },
+        });
+      }
+    
+      // If fuelId is valid, proceed with updating 'from' object
+      from.address = vendor.address;
+      from.latitude = vendor.latitude;
+      from.longitude = vendor.longitude;
+    
+      attachmentName = "order-receipt";
+      attachmentUrl = await firebase_methods.uploadOrderAttachment(
+        companyId,
+        attachmentName,
+        attachment,
+        mimetype
+      );
+    }
+    
+    if (fromOption === 1) {
+      const station = await Station.findById(from.stationId);
+    
+      if (!station) {
+        return res.status(400).json({
+          success: false,
+          error: { message: "No such station found!" },
+        });
+      }
+    
+      // Check if the fuelId in 'from' matches one of the station's fuels
+      const isFuelIdValid = station.fuels.includes(from.fuelId);
+    
+      if (!isFuelIdValid) {
+        return res.status(400).json({
+          success: false,
+          error: { message: "Invalid fuelId for the station!" },
+        });
+      }
+    
+      // Update 'from' object with station information
+      from.address = station.address;
+      from.latitude = station.latitude;
+      from.longitude = station.longitude;
+    
+      // Check additional conditions if driverId is provided
+      if (driverId) {
+        const driverTruck = await TruckModel.findOne({ driverId });
+    
+        if (!driverTruck) {
+          return res.status(400).json({
+            success: false,
+            error: { message: "No truck found for the provided driverId!" },
+          });
+        }
+    
+        if (from.fuel_value > driverTruck.capacity) {
+          return res.status(400).json({
+            success: false,
+            error: { message: "Driver truck capacity is lower than the fuel value!" },
+          });
+        }
+      }
+    }
+    var fuels_with_stations = []
     const attachmentObj =
     fromOption === 0 ? [{ name: attachmentName, url: attachmentUrl }] : [];
-
+     fuels_with_stations = await Promise.all(stations.map(async (station) => {
+      try {
+        const {value} = await Fuel.findOne({ _id: station.fuelId });
+        return { ...station, ...{ value } };
+      } catch (error) {
+        // Handle errors, log them, or return a default value as needed
+        console.error(`Error fetching fuel with id ${station.fuelId}: ${error.message}`);
+        return null;
+      }
+    }));
+    
+    console.log('fuels_with_stations', fuels_with_stations);
+    
+    
     stations[0].status = 1;
-    console.log('from is', from)
-    // create order document
     const order = await new Order({
-      stations,
+      stations: fuels_with_stations,
       orderManagerId,
       companyId,
       fuel_type,
@@ -316,8 +307,7 @@ const createOrder = async (req, res) => {
       driverTip,
     }).save();
     
-
-    res.status(200).json({ success: true, data: order });
+    res.status(200).json({ success: true, data: { order } });
     
     if (!driverId) {
       const notificationDesc = `Accept Or Reject Order ${order._id}`;
@@ -389,6 +379,8 @@ const createOrder = async (req, res) => {
     res.status(400).json({ success: false, error: error.message });
   }
 };
+
+
 
 const ApproveOrder = async (req, res) => {
   try {
