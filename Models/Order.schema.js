@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 
 const OrderSchema = new mongoose.Schema({
   orderManagerId: { type: mongoose.Types.ObjectId, required: true },
+  fuel_quantity: {type: Number, required: true},
   stations: [
     {
       id: { type: mongoose.Types.ObjectId, required: true, ref: "station" },

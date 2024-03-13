@@ -45,6 +45,7 @@ const createOrder = async (req, res) => {
       orderManagerId,
       companyId,
       fuel_type,
+      fuel_quantity,
       driverId,
       from,
       reciept_number,
@@ -291,6 +292,7 @@ const createOrder = async (req, res) => {
       orderManagerId,
       companyId,
       fuel_type,
+      fuel_quantity,
       driverId,
       from: {
         option: from.option,
