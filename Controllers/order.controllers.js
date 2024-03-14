@@ -966,7 +966,7 @@ const getDriverOrderReciept = async (req, res) => {
 };
 
 const driverRecievedOrder = async (req, res) => {
-  const { driverId, orderId, stationId } = req.body;
+  const { driverId, orderId, fromId, pickUpStation } = req.body;
   console.log('req.body', req.body)
   const attachment = req.file.buffer;
   const mimetype = req?.file?.mimetype;
@@ -991,14 +991,17 @@ const driverRecievedOrder = async (req, res) => {
         success: false,
         error: { message: "No data of such driver found!" },
       });
-    const order = await Order.findOne({
-      _id: orderId,
-      stations: { $elemMatch: { id: stationId } },
-    }).populate("stations.id");
+      const order = await Order.findOne({
+        _id: orderId,
+        $or: [
+          { from: { $elemMatch: { stationId: fromId } } },
+          { from: { $elemMatch: { vendorId: fromId } } }
+        ]
+      })
     if (!order)
       return res.status(200).json({
         success: false,
-        error: { message: `No such order found! For stationId ${stationId}` },
+        error: { message: `No such order found! For station or Vendor ${fromId}` },
       });
     if (order.driverId != driverId)
       return res.status(200).json({
@@ -1018,7 +1021,7 @@ const driverRecievedOrder = async (req, res) => {
     let stationName;
     const stationsData = await Promise.all(
       stations.map((station) => {
-        if (station?.id?._id != stationId) return station;
+        if (station?.id?._id != pickUpStation) return station;
         station.status = 2;
         stationName = station?.id?.name;
         return station;
@@ -1026,7 +1029,7 @@ const driverRecievedOrder = async (req, res) => {
     );
     order.attachments = [
       ...order.attachments,
-      { name: attachmentName, url: attachmentUrl, stationId: stationId },
+      { name: attachmentName, url: attachmentUrl, stationId: pickUpStation },
     ];
     order.stations = stationsData;
     await order.save();
