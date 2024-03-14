@@ -1001,7 +1001,7 @@ const driverRecievedOrder = async (req, res) => {
     if (!order)
       return res.status(200).json({
         success: false,
-        error: { message: `No such order found! For station or Vendor ${fromId}` },
+        error: { message: `No such order found! For station or Vendor ${fromId} order is: ${order}` },
       });
     if (order.driverId != driverId)
       return res.status(200).json({
