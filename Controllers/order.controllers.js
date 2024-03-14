@@ -994,10 +994,10 @@ const driverRecievedOrder = async (req, res) => {
       const order = await Order.findOne({
         _id: orderId,
         $or: [
-          { from: { $elemMatch: { stationId: fromId } } },
-          { from: { $elemMatch: { vendorId: fromId } } }
+          { 'from.stationId': fromId },
+          { 'from.vendorId': fromId }
         ]
-      })
+      })      
     if (!order)
       return res.status(200).json({
         success: false,
