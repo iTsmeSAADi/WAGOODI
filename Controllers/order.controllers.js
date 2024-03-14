@@ -1021,13 +1021,10 @@ const driverRecievedOrder = async (req, res) => {
     console.log("station for order : ", stations);
     const {from, fuel_quantity} = order;
     
-    // Update fuel_quantity based on the from fuel_value
-    order.fuel_quantity -= from.fuel_value;
-    
     // Find the fuel in Fuel model by from.fuelId and subtract fuel value from it
     const fuel = await Fuel.findById(from.fuelId);
     if (fuel) {
-      fuel.value -= from.fuel_value;
+      fuel.value -= order.fuel_quantity;
       await fuel.save();
     }
     
