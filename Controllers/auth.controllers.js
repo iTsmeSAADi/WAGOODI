@@ -37,13 +37,13 @@ const signUpAccount = async (req, res) => {
         .status(401)
         .json({ success: false, error: { msg: "Unauthorize access!" } });
     }
-    if (authRole === 1 && !req.user.companyId._id) {
+    if (authRole === 1 && !req.user.companyId.value) {
       return res
         .status(200)
         .json({ success: false, error: { msg: "CompanyId is undefined!" } });
     }
     if (authRole === 1) {
-      companyId = req.user.companyId._id;
+      companyId = req.user.companyId.value;
     }
     if (!email || !password || !role || !name) {
       return res
@@ -449,10 +449,10 @@ const verifyAdmin = async (req, res, next) => {
 const verifyAdminAndCompanyAdmin = async (req, res, next) => {
   const companyId = req?.body?.companyId || req?.params?.companyId;
   console.log(req.body);
-  console.log(req.user.companyId._id);
+  console.log(req.user.companyId.value);
   const role = req?.user?.role;
   if (role == 0 || role == 1) {
-    if (role == 1 && companyId != req.user.companyId._id) {
+    if (role == 1 && companyId != req.user.companyId.value) {
       return res.status(401).json({
         success: false,
         error: { msg: "Unauthorized!, Only owner of company can access!" },
@@ -536,7 +536,7 @@ const verifyUser = async (req, res, next) => {
 const verifyCompanyId = async (req, res, next) => {
   console.log("body companyId ", req.body.companyId);
   console.log("query companyId ", req.query.companyId);
-  console.log("user companyId ", req.user.companyId._id);
+  console.log("user companyId ", req.user.companyId.value);
   const companyId = req.query?.companyId || req.body.companyId;
   console.log("companyid equals ?  ", req?.user?.companyId?._id == companyId);
   const authorizedCompanyUser = req?.user?.companyId?._id == companyId;
