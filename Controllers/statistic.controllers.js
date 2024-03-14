@@ -1,6 +1,7 @@
 const Company = require("../Models/Company.schema");
 const Station = require("../Models/Station.schema");
 const Account = require("../Models/Account.schema");
+const Order = require('../Models/Order.schema')
 const mongoose = require("mongoose");
 const { uploadCompanyFile } = require("../Utils/firebase");
 const { sendMail } = require("../Utils/mail");
@@ -207,6 +208,37 @@ const driversStats = async (req, res) => {
   } catch (error) {
     console.log(error);
     createError(res, 400, error.message);
+  }
+};
+
+const getSalesManagerStats = async (req, res) => {
+  const { companyId } = req.body;
+
+  try {
+    // Check if the user is a sales manager
+    const salesManager = await Account.findOne({ companyId, privilage: 0 });
+    console.log('salesManager', salesManager)
+    if (!salesManager) {
+      return res.status(404).json({ success: false, error: { msg: "No sales manager found for this company." } });
+    }
+
+    // Retrieve orders for the sales manager
+    const orders = await Order.find({ companyId, orderManagerId: salesManager._id });
+
+    // Extract required stats from orders
+    const stats = orders.map(order => ({
+      employeeName: salesManager.name,
+      stationName: order.stations.map(station => station.name),
+      email: salesManager.email,
+      fuelType: order.fuel_type,
+      fuelVolume: order.fuel_quantity,
+      amount: order.amount
+    }));
+
+    return res.status(200).json({ success: true, data: stats });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ success: false, error: { msg: "Internal server error." } });
   }
 };
 
@@ -491,4 +523,5 @@ module.exports = {
   stationStats,
   individualDriverStats,
   sendStatsReport,
+  getSalesManagerStats
 };

@@ -17,7 +17,6 @@ router.post("/list/", auth.verifyUserCookie, auth.verifyAdminAndCompanyAdmin, au
 router.post("/", auth.verifyUserCookie, auth.verifySuperAdmin, auth.getUser)
 router.get("/getAllDrivers", auth.verifyUserCookie, auth.getAllDrivers)
 router.get("/check-token", auth.verifyUserCookie, auth.accessTokenExpired)
-router.get("/sales-managers", auth.verifyUserCookie, auth.listAllSalesManagers)
 
 
 module.exports = router;

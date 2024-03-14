@@ -402,24 +402,6 @@ const changePassword = async (req, res) => {
   }
 };
 
-const listAllSalesManagers = async (req, res, next) => {
-  try {
-    // Find all accounts with privilege level 0
-    const salesManagers = await Account.find({ privilage: 0 }, '-password');
-
-    // Check if there are any sales managers
-    if (salesManagers.length === 0) {
-      return res.status(404).json({ message: 'No sales managers found' });
-    }
-
-    // If sales managers are found, send them as a response
-    res.status(200).json({ salesManagers });
-  } catch (error) {
-    // Handle errors
-    console.error('Error fetching sales managers:', error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-}
 
 const signOut = async (req, res) => {
   try {
@@ -732,5 +714,4 @@ module.exports = {
   verifyIsLoggedIn,
   getAllDrivers,
   deleteUser,
-  listAllSalesManagers
 };

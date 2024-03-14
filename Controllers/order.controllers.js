@@ -967,6 +967,8 @@ const getDriverOrderReciept = async (req, res) => {
 
 const driverRecievedOrder = async (req, res) => {
   const { driverId, orderId } = req.body;
+  const attachment = req.file.buffer;
+  const mimetype = req?.file?.mimetype;
   console.log('req.body', req.body)
   const io = req?.app?.io;
   
