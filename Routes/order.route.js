@@ -19,7 +19,7 @@ router.post("/driver/reject", auth.verifyUserCookie, auth.verifyApproved, auth.v
 router.post("/approve", upload.single("attachment"), auth.verifyUserCookie, auth.verifyApproved, auth.verifyStationManager, order.ApproveOrder)
 router.post("/driver/cancel", auth.verifyUserCookie, auth.verifyApproved, auth.verifyDriver, order.driverCancelOrder)
 router.get("/driver/:driverId", auth.verifyUserCookie, auth.verifyApproved, auth.verifyDriver, order.driverGetOrders)
-router.post("/driver/received", upload.single("attachment"), auth.verifyUserCookie, auth.verifyApproved, auth.verifyDriver, order.driverRecievedOrder)
+router.post("/driver/received", upload.single("attachment"), auth.verifyUserCookie, auth.verifyApproved, order.driverRecievedOrder)
 router.post("/driver/delivered", auth.verifyUserCookie,  order.driverDeliveredOrder);
 router.post("/manager/complete", upload.single("attachment"), auth.verifyUserCookie, auth.verifyApproved, auth.verifySeniorStationManager, order.ManagerCompleteOrder);
 router.post("/station-manager/complete", upload.single("attachment"), auth.verifyUserCookie, auth.verifyApproved, auth.verifySeniorStationManager, order.stationManagerCompleteOrder);
