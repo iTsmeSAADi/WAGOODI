@@ -1024,6 +1024,7 @@ const driverRecievedOrder = async (req, res) => {
     const fuel = await Fuel.findById(order.from.fuelId);
     console.log('fuel was', fuel)
     if (fuel) {
+      console.log('TTTTTTTTTTTEEEEEEEEESSSSSSSSSSSSSSTTTTTTTTTTTTTTTT', typeof fuel.value, typeof order.fuel_quantity)
       const newValue = fuel.value - order.fuel_quantity;
       fuel.value = newValue
       await fuel.save();
