@@ -969,7 +969,8 @@ const driverRecievedOrder = async (req, res) => {
   const { driverId, orderId } = req.body;
   const attachment = req?.file?.buffer;
   const mimetype = req?.file?.mimetype;
-  console.log('req.body', req.body)
+  
+  console.log('req.body', req.body, req.file)
   const io = req?.app?.io;
   
   if (!attachment)
@@ -1051,8 +1052,7 @@ const driverDeliveredOrder = async (req, res) => {
   const { driverId, orderId, stationId } = req.body;
   const attachment = req?.file?.buffer;
   const mimetype = req?.file?.mimetype;
-  console.log("req.body", req.body);
-  console.log("req.file", attachment)
+  console.log("req.body", req.body, req.file);
   const io = req?.app?.io;
 
   if (!attachment)
