@@ -215,32 +215,42 @@ const getSalesManagerStats = async (req, res) => {
   const { companyId } = req.body;
 
   try {
-    // Check if the user is a sales manager
-    const salesManager = await Account.findOne({ companyId, privilage: 0 });
-    console.log('salesManager', salesManager)
-    if (!salesManager) {
-      return res.status(404).json({ success: false, error: { msg: "No sales manager found for this company." } });
+    // Check if there are sales managers for the specified company
+    const salesManagers = await Account.find({ companyId, privilage: 0 });
+    if (salesManagers.length === 0) {
+      return res.status(404).json({ success: false, error: { msg: "No sales managers found for this company." } });
     }
 
-    // Retrieve orders for the sales manager
-    const orders = await Order.find({ companyId, orderManagerId: salesManager._id });
+    // Array to store stats for all sales managers
+    const allStats = [];
 
-    // Extract required stats from orders
-    const stats = orders.map(order => ({
-      employeeName: salesManager.name,
-      stationName: order.stations.map(station => station.name),
-      email: salesManager.email,
-      fuelType: order.fuel_type,
-      fuelVolume: order.fuel_quantity,
-      amount: order.amount
-    }));
+    // Loop through each sales manager
+    for (const salesManager of salesManagers) {
+      // Retrieve orders for the current sales manager
+      const orders = await Order.find({ companyId });
+      const station = await Station.findOne({ _id: salesManager.stationId });
 
-    return res.status(200).json({ success: true, data: stats });
+      // Extract required stats from orders
+      const stats = orders.map(order => ({
+        employeeName: salesManager.name,
+        stationName: station.name,
+        phoneNumber: salesManager.phone_number,
+        fuelType: order.fuel_type,
+        fuelVolume: order.fuel_quantity,
+        amount: order.amount
+      }));
+
+      // Add stats for the current sales manager to the array
+      allStats.push(...stats);
+    }
+
+    return res.status(200).json({ success: true, data: allStats });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ success: false, error: { msg: "Internal server error." } });
   }
 };
+
 
 const stationStats = async (req, res) => {
   const {
