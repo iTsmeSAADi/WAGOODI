@@ -1021,7 +1021,7 @@ const driverRecievedOrder = async (req, res) => {
     console.log("station for order : ", stations);    
     
     // Find the fuel in Fuel model by from.fuelId and subtract fuel value from it
-    const fuel = await Fuel.findById(from.fuelId);
+    const fuel = await Fuel.findById(order.from.fuelId);
     console.log('fuel was', fuel)
     if (fuel) {
       const newValue = fuel.value - order.fuel_quantity;
