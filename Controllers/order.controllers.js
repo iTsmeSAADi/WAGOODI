@@ -1052,6 +1052,7 @@ const driverDeliveredOrder = async (req, res) => {
   const attachment = req?.file?.buffer;
   const mimetype = req?.file?.mimetype;
   console.log("req.body", req.body);
+  console.log("req.file", attachment)
   const io = req?.app?.io;
 
   if (!attachment)
