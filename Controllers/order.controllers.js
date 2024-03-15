@@ -387,7 +387,7 @@ const createOrder = async (req, res) => {
 const ApproveOrder = async (req, res) => {
   try {
     const { order_number, start_point, station_name, arrival_time, reciept_number, required_volume, received_volume, issued_volume } = req.body;
-    const attachment = req.file?.buffer;
+    const attachment = req?.file?.buffer;
     const mimetype = req.file?.mimetype;
 
     console.log('req.files', req.files);
@@ -967,7 +967,7 @@ const getDriverOrderReciept = async (req, res) => {
 
 const driverRecievedOrder = async (req, res) => {
   const { driverId, orderId } = req.body;
-  const attachment = req.file.buffer;
+  const attachment = req?.file?.buffer;
   const mimetype = req?.file?.mimetype;
   console.log('req.body', req.body)
   const io = req?.app?.io;
@@ -1049,7 +1049,7 @@ const driverRecievedOrder = async (req, res) => {
 
 const driverDeliveredOrder = async (req, res) => {
   const { driverId, orderId, stationId } = req.body;
-  const attachment = req.file.buffer;
+  const attachment = req?.file?.buffer;
   const mimetype = req?.file?.mimetype;
   console.log("req.body", req.body);
   const io = req?.app?.io;
@@ -1168,7 +1168,7 @@ const driverDeliveredOrder = async (req, res) => {
 // individual station order complete
 const stationManagerCompleteOrder = async (req, res) => {
   const { stationManagerId, orderId, fuel_recieved } = req.body;
-  const attachment = req.file.buffer;
+  const attachment = req?.file?.buffer;
   const mimetype = req?.file?.mimetype;
   const io = req?.app?.io
   const stationId = req.user.stationId._id;
@@ -1361,7 +1361,7 @@ const orderManagerCompletedOrder = async (req, res) => {
 
 const ManagerCompleteOrder = async (req, res) => {
   const { stationManagerId, orderId, fuel_recieved } = req.body;
-  const attachment = req.file.buffer;
+  const attachment = req?.file?.buffer;
   const mimetype = req?.file?.mimetype;
   const io = req?.app?.io
 
