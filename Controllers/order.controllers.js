@@ -1049,8 +1049,17 @@ const driverRecievedOrder = async (req, res) => {
 
 const driverDeliveredOrder = async (req, res) => {
   const { driverId, orderId, stationId } = req.body;
+  const attachment = req.file.buffer;
+  const mimetype = req?.file?.mimetype;
   console.log("req.body", req.body);
   const io = req?.app?.io;
+
+  if (!attachment)
+  return res.status(200).json({
+    success: false,
+    error: { message: "attachment file is required!" },
+  });
+
   if (!driverId)
     return res
       .status(200)
@@ -1111,6 +1120,17 @@ const driverDeliveredOrder = async (req, res) => {
     // Update order status to 3 if all stations are delivered
     if (allStationsDelivered) {
       order.status = 3;
+      const attachmentName = "driver-receipt";
+      const attachmentUrl = await firebase_methods.uploadOrderAttachment(
+        order.companyId,
+        attachmentName,
+        attachment,
+        mimetype
+      );
+      order.attachments = [
+        ...order.attachments,
+        { name: attachmentName, url: attachmentUrl },
+      ];
     }
 
     await order.save();
