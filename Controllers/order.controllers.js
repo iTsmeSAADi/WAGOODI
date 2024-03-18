@@ -1165,6 +1165,34 @@ const driverDeliveredOrder = async (req, res) => {
   }
 };
 
+const deliveredByNumber = async (req, res) => {
+  try {
+    const { orderNumber } = req.params;
+
+    console.log(orderNumber)
+
+    // Validate orderNumber
+    if (!orderNumber) {
+      return res.status(400).json({ success: false, error: 'Order number is required.' });
+    }
+
+    // Assuming you're using Sequelize as ORM for a SQL database
+    const order = await Order.find({
+        orderNumber,
+        status: 3 // 3 for delivered
+    });
+
+    if (!order) {
+      return res.status(404).json({ success: false, error: 'Order not found or not delivered.' });
+    }
+
+    // If order is found and delivered, you can send it in response
+    res.status(200).json({ success: true, order });
+  } catch (error) {
+    console.error('Error retrieving order:', error);
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
+}
 
 // individual station order complete
 const stationManagerCompleteOrder = async (req, res) => {
@@ -1615,5 +1643,6 @@ module.exports = {
   driverGetOrders,
   driverRejectOrder,
   driverCancelOrder,
-  ApproveOrder
+  ApproveOrder,
+  deliveredByNumber
 };

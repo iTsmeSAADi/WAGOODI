@@ -21,6 +21,7 @@ router.post("/driver/cancel", auth.verifyUserCookie, auth.verifyApproved, auth.v
 router.get("/driver/:driverId", auth.verifyUserCookie, auth.verifyApproved, auth.verifyDriver, order.driverGetOrders)
 router.post("/driver/received", upload.single("attachment"), auth.verifyUserCookie, auth.verifyApproved, order.driverRecievedOrder)
 router.post("/driver/delivered", upload.single("attachment"), auth.verifyUserCookie,  order.driverDeliveredOrder);
+router.post("/delivered/:orderNumber", auth.verifyUserCookie,  order.deliveredByNumber);
 router.post("/manager/complete", upload.single("attachment"), auth.verifyUserCookie, auth.verifyApproved, auth.verifySeniorStationManager, order.ManagerCompleteOrder);
 router.post("/station-manager/complete", upload.single("attachment"), auth.verifyUserCookie, auth.verifyApproved, auth.verifySeniorStationManager, order.stationManagerCompleteOrder);
 
