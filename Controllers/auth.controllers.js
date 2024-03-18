@@ -32,11 +32,7 @@ const signUpAccount = async (req, res) => {
         success: false,
         error: { msg: "One SuperAdmin exist, unauthorize to create many!" },
       });
-    if (authRole !== 0 && authRole !== 1) {
-      return res
-        .status(401)
-        .json({ success: false, error: { msg: "Unauthorize access!" } });
-    }
+
     if (authRole === 1 && !req.user.companyId._id) {
       return res
         .status(200)

@@ -217,6 +217,8 @@ const getSalesManagerStats = async (req, res) => {
   try {
     // Check if there are sales managers for the specified company
     const salesManagers = await Account.find({ companyId, privilage: 0 });
+    console.log("sales manager", salesManagers)
+
     if (salesManagers.length === 0) {
       return res.status(404).json({ success: false, error: { msg: "No sales managers found for this company." } });
     }
@@ -228,8 +230,11 @@ const getSalesManagerStats = async (req, res) => {
     for (const salesManager of salesManagers) {
       // Retrieve orders for the current sales manager
       const orders = await Order.find({ companyId });
-      const station = await Station.findOne({ _id: salesManager.stationId });
+      const station = await Station.find({ _id: salesManager.stationId });
 
+
+      console.log('orders', orders)
+      console.log('stations', station)
       // Extract required stats from orders
       const stats = orders.map(order => ({
         employeeName: salesManager.name,

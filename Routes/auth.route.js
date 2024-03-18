@@ -2,7 +2,7 @@ const router = require("express").Router();
 const auth = require("../Controllers/auth.controllers")
 const {signUpCompany} = require("../Controllers/company.controllers")
 
-router.post("/sign-up", auth.verifyUserCookie, auth.signUpAccount)
+router.post("/sign-up",  auth.signUpAccount)
 // company sign-up / register
 router.get("/is-log-in", auth.verifyUserCookie, auth.verifyIsLoggedIn)
 router.post("/company/sign-up", signUpCompany)
