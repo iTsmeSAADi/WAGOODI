@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const moment = require("moment-timezone");
 
 const OrderSchema = new mongoose.Schema({
   orderManagerId: { type: mongoose.Types.ObjectId, required: true },
@@ -67,7 +68,7 @@ const OrderSchema = new mongoose.Schema({
     latitude: { type: Number },
     longitude: { type: Number },
   },
-  createdAt: {type: Number, default: Math.floor(Date.now() / 1000)},
+  createdAt: { type: Number, default: () => moment().tz("Asia/Karachi").unix() },
   arrival_date: { type: Number },
   expected_arrival: {type: Number},
   reciept_number: {type: String, required: true},
@@ -76,6 +77,7 @@ const OrderSchema = new mongoose.Schema({
   issued_volume: { type: Number, required: function() { return this.status === 4; } },
   received_volume: { type: Number, required: function() { return this.status === 4; } },
 });
+
 
 const Order = mongoose.model("order", OrderSchema);
 
