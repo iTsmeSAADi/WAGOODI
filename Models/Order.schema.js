@@ -25,7 +25,7 @@ const OrderSchema = new mongoose.Schema({
       value: {type: Number, ref: "fuel"}
     },
   ],
-  orderNumber: {type: Number, default: Math.floor(Math.random() * 90000) + 1000},
+  orderNumber: { type: Number, unique: true },
   driverId: { type: mongoose.Types.ObjectId, ref: "account" },
   attachments: [
     {
@@ -76,6 +76,18 @@ const OrderSchema = new mongoose.Schema({
   driverTip: {type: Number},
   issued_volume: { type: Number, required: function() { return this.status === 4; } },
   received_volume: { type: Number, required: function() { return this.status === 4; } },
+});
+
+OrderSchema.pre("save", async function(next) {
+  // Generate unique order number
+  if (!this.orderNumber) {
+    let found;
+    do {
+      this.orderNumber = Math.floor(Math.random() * 90000) + 1000;
+      found = await this.constructor.findOne({ orderNumber: this.orderNumber });
+    } while (found);
+  }
+  next();
 });
 
 
