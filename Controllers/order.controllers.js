@@ -547,21 +547,27 @@ const allCompanyQueryOrders = async (req, res) => {
       orders?.map(
         async (order, i) => {
           const order1 = {...order._doc};
-          delete order1.stations
-          await Promise.all(order?.stations?.map( async (station) => {            
-            refactorOrder.push({...order1, station})
-            return null
-          }))
-          return null
+          delete order1.stations;
+          if (order?.stations) {
+            await Promise.all(order.stations.map(async (station) => {
+              if (station && station.id !== null) { // Check if station exists and id is not null
+                if (station.id !== null) { // Check if station id is not null
+                  refactorOrder.push({...order1, station});
+                }
+              }
+            }));
+          }
+          return null;
         }
       )
-    )
+    );
     res.status(200).json({ success: true, data: refactorOrder });
   } catch (error) {
     console.log(error);
     res.status(400).json({ success: false, error: error.message });
   }
 };
+
 
 const updateOrder = async (req, res) => {
   const { id, data } = req.body;
