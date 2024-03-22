@@ -994,7 +994,8 @@ const driverRecievedOrder = async (req, res) => {
         success: false,
         error: { message: "No data of such driver found!" },
       });
-      
+
+
     const order = await Order.findOne({
       _id: orderId
     });      
@@ -1023,15 +1024,20 @@ const driverRecievedOrder = async (req, res) => {
     
     // Find the fuel in Fuel model by from.fuelId and subtract fuel value from it
     const fuel = await Fuel.findById(order.from.fuelId);
+      console.log('fromOption', order.from.option)
     console.log('fuel was', fuel)
-    if (fuel) {
+    if (fuel && order.from.option === 1) {
       console.log('TTTTTTTTTTTEEEEEEEEESSSSSSSSSSSSSSTTTTTTTTTTTTTTTT', typeof fuel.value, typeof order.fuel_quantity)
       const newValue = fuel.value - order.fuel_quantity;
       fuel.value = newValue
       await fuel.save();
       console.log("updated fuel", fuel)
     }
-    
+    else {
+      console.log("fuel is of Vendor:", fuel)
+      await fuel.save();
+    }
+
     order.attachments = [
       ...order.attachments,
       { name: attachmentName, url: attachmentUrl },
@@ -1042,7 +1048,7 @@ const driverRecievedOrder = async (req, res) => {
     res.end();
   } catch (error) {
     console.log(error);
-    res.status(400).json({ success: false, error: error.message });
+    res.status(400).json({ success: false, error: {'msg': error.message} });
   }
 };
 
