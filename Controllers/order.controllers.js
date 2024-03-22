@@ -410,10 +410,10 @@ const ApproveOrder = async (req, res) => {
       return res.status(400).json({ success: false, error: {msg: 'Order is already approved.'} });
     }
 
-    // Check if the order is assigned (status 1)
-    if (existingOrder.status !== 1) {
-      return res.status(400).json({ success: false, error: {msg: 'Order is not assigned for delivery yet.'} });
-    }
+    // // Check if the order is assigned (status 1)
+    // if (existingOrder.status !== 1) {
+    //   return res.status(400).json({ success: false, error: {msg: 'Order is not assigned for delivery yet.'} });
+    // }
 
     let attachmentName = "signed-receiving-receipt";
     let attachmentUrl = await firebase_methods.uploadOrderAttachment(
