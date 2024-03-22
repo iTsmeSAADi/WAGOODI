@@ -292,10 +292,7 @@ const stationStats = async (req, res) => {
       },
       {
         $match: {
-          $and: [
-            { "dayorders.createdAt": { $gte: start_date } },
-            { "dayorders.createdAt": { $lte: end_date } },
-          ],
+          "dayorders.createdAt": { $gte: start_date, $lte: end_date },
         },
       },
       {
@@ -314,29 +311,17 @@ const stationStats = async (req, res) => {
       },
       {
         $match: {
-          $and: [
-            { "daysales.createdAt": { $gte: start_date } },
-            { "daysales.createdAt": { $lte: end_date } },
-          ],
+          "daysales.createdAt": { $gte: start_date, $lte: end_date },
         },
       },
       {
         $group: {
-          _id: {
-            day: {
-              $dayOfMonth: {
-                $toDate: { $multiply: ["$dayorders.createdAt", 1000] }, // Adjust based on the actual date format in your data
-              },
-            },
-          },
+          _id: "$_id",
           name: { $first: "$name" },
           stationId: { $first: "$_id" },
-          totalOrder: { $sum: "$dayorders.quantity" },
-          totalSale: { $sum: "$daysales.quantity" },
-          totalSaleAmount: { $sum: "$daysales.amount" },
-          totalSaleFuel: { $sum: "$daysales.fuel_value" },
-          totalOrderValue: { $sum: "$dayorders.amount" },
-          totalOrderFuel: { $sum: "$dayorders.recieved_value" },
+          address: { $first: "$address" },
+          moneyEarned: { $sum: "$daysales.amount" },
+          moneySpent: { $sum: "$dayorders.amount" },
         },
       },
     ]).exec();
@@ -348,6 +333,7 @@ const stationStats = async (req, res) => {
     res.status(400).json({ success: false, error: error.message });
   }
 };
+
 
 
 const companyAllStats = async (req, res) => {
