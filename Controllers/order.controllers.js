@@ -386,15 +386,15 @@ const createOrder = async (req, res) => {
 
 const ApproveOrder = async (req, res) => {
   try {
-    const { order_number, start_point, station_name, arrival_time, reciept_number, required_volume, received_volume, issued_volume } = req.body;
+    const { order_number, start_point, station_name, arrival_time, reciept_number, received_volume, issued_volume } = req.body;
     const attachment = req?.file?.buffer;
     const mimetype = req.file?.mimetype;
 
     console.log('req.files', req.files);
 
-    console.log(order_number, start_point, station_name, arrival_time, reciept_number, required_volume, received_volume, issued_volume, req.body);
+    console.log(order_number, start_point, station_name, arrival_time, reciept_number, received_volume, issued_volume, req.body);
 
-    if (!order_number || !start_point || !station_name || !arrival_time || !reciept_number || !required_volume || !received_volume || !issued_volume) {
+    if (!order_number || !start_point || !station_name || !arrival_time || !reciept_number || !received_volume || !issued_volume) {
       return res.status(400).json({ success: false, error: 'Missing required parameters in the request body.' });
     }
 
@@ -432,7 +432,6 @@ const ApproveOrder = async (req, res) => {
     existingOrder.reciept_number = reciept_number;
 
     // Add updates for required_volume, issued_volume, and received_volume
-    existingOrder.required_volume = required_volume;
     existingOrder.issued_volume = issued_volume;
     existingOrder.received_volume = received_volume;
 
