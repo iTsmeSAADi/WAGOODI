@@ -305,6 +305,7 @@ io.on("connection", async (socket) => {
           const rejectedOrders = await DriverRejectedModel.find({
             driverId: user._id,
             createdAt: { $gte: twentyFourHoursAgo },
+            companyId: user.companyId._id,
           });
       
           // Extract the orderIds from the rejected orders
@@ -315,8 +316,8 @@ io.on("connection", async (socket) => {
             $and: [
               {
                 $or: [
-                  { driverId: user._id, status: 1, createdAt: { $gte: twentyFourHoursAgo } },
-                  { status: 0, createdAt: { $gte: twentyFourHoursAgo } },
+                  { driverId: user._id, companyId: user.companyId._id, status: 1, createdAt: { $gte: twentyFourHoursAgo } },
+                  { status: 0, companyId: user.companyId._id, createdAt: { $gte: twentyFourHoursAgo } },
                 ],
               },
               { _id: { $nin: rejectedOrderIds } },
