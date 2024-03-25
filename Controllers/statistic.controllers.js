@@ -256,24 +256,23 @@ const getSalesManagerStats = async (req, res) => {
   }
 };
 
-
 const stationStats = async (req, res) => {
   const {
-    id,
+    companyId,
     start_date = Math.floor(Date.now() / 1000) - 2592000, // 2592000 seconds in 30 days
     end_date = Math.floor(Date.now() / 1000),
   } = req.body;
 
-  if (!id)
+  if (!companyId)
     return res
       .status(200)
-      .json({ success: false, error: { msg: "id is undefined!" } });
+      .json({ success: false, error: { msg: "companyId is undefined!" } });
 
   try {
     const stationStatistics = await Station.aggregate([
       {
         $match: {
-          _id: new mongoose.Types.ObjectId(id),
+          companyId: mongoose.Types.ObjectId(companyId),
         },
       },
       {
@@ -316,10 +315,8 @@ const stationStats = async (req, res) => {
       },
       {
         $group: {
-          _id: "$_id",
-          name: { $first: "$name" },
-          stationId: { $first: "$_id" },
-          address: { $first: "$address" },
+          _id: "$companyId",
+          companyId: { $first: "$companyId" },
           moneyEarned: { $sum: "$daysales.amount" },
           moneySpent: { $sum: "$dayorders.amount" },
         },
@@ -333,6 +330,7 @@ const stationStats = async (req, res) => {
     res.status(400).json({ success: false, error: error.message });
   }
 };
+
 
 
 

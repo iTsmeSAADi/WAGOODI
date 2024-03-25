@@ -305,7 +305,6 @@ io.on("connection", async (socket) => {
           const rejectedOrders = await DriverRejectedModel.find({
             driverId: user._id,
             createdAt: { $gte: twentyFourHoursAgo },
-            companyId: user.companyId._id,
           });
       
           // Extract the orderIds from the rejected orders
