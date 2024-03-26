@@ -299,7 +299,11 @@ const getUser = async (req, res) => {
 
 const getAllDrivers = async (req, res) => {
   try {
-    const drivers = await Account.find({ role: 4 }).select('-password');
+    // Assuming req.user.companyId._id represents the companyId of the authenticated user
+    const companyId = req.user.companyId._id;
+
+    // Query to find drivers with matching companyId
+    const drivers = await Account.find({ role: 4, companyId }).select('-password');
 
     if (drivers.length === 0) {
       return res.status(200).json({
@@ -314,6 +318,7 @@ const getAllDrivers = async (req, res) => {
     res.status(400).json({ success: false, error: { msg: error.message } });
   }
 };
+
 
 
 
