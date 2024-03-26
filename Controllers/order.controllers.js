@@ -860,10 +860,10 @@ const driverAssignOrder = async (req, res) => {
 
 const driverRejectOrder = async (req, res) => {
   try {
-    const { orderId, driverId } = req.body;
+    const { orderId, driverId, companyId } = req.body;
 
     // Check if the combination of orderId and driverId already exists in the DriverRejectedModel
-    const existingRejectionEntry = await DriverRejectedModel.findOne({ order: orderId, driverId: driverId });
+    const existingRejectionEntry = await DriverRejectedModel.findOne({ order: orderId, driverId: driverId, companyId: companyId });
 
     if (existingRejectionEntry) {
       return res.status(400).json({ error: 'Order has already been rejected by the driver', success: false });
@@ -885,6 +885,7 @@ const driverRejectOrder = async (req, res) => {
     const rejectionEntry = new DriverRejectedModel({
       driverId: driverId,
       order: orderId,
+      companyId: companyId,
       description: description,
     });
 

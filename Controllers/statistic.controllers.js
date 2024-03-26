@@ -272,7 +272,7 @@ const stationStats = async (req, res) => {
     const stationStatistics = await Station.aggregate([
       {
         $match: {
-          companyId: mongoose.Types.ObjectId(companyId),
+          companyId: companyId,
         },
       },
       {
