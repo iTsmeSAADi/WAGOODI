@@ -447,7 +447,7 @@ const verifyAdmin = async (req, res, next) => {
     res.status(400).json({ success: false, error: error.message });
   }
 };
-
+// 
 const verifyAdminAndCompanyAdmin = async (req, res, next) => {
   const companyId = req?.body?.companyId || req?.params?.companyId;
   console.log(req.body);
