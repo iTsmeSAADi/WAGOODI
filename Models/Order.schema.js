@@ -15,7 +15,7 @@ const OrderSchema = new mongoose.Schema({
       },
       name: String,
       pickedAt: { type: Number },
-      deliveryTime: { type: Number },
+      deliveryTime: { type: Number, default: null },
       // Add latitude and longitude properties
       latitude: { type: Number },
       longitude: { type: Number },
