@@ -330,6 +330,10 @@ const createOrder = async (req, res) => {
       
 
       console.log('OrderData', order)
+
+      io.to("/companyDriver-" + companyId,
+      `/company/drivers-${companyId}`
+  ).emit("notification-message", {notification: companyDriversNotification, order: order});
     }
 
     const notificationsCreation = await Promise.all(
@@ -368,6 +372,7 @@ const createOrder = async (req, res) => {
       accountId: driverId,
     }).save();
     console.log('driver is', driverId)
+
     io.to(`/driver-${driverId}`).emit("notification-message", {notification: driverNotification, order: order});
     
   } catch (error) {
