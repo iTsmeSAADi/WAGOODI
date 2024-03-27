@@ -7,7 +7,7 @@ const StationSchema = new mongoose.Schema({
     fuels: [{type: mongoose.Types.ObjectId, required: true, ref: "fuel"}],
     name: {type: String, required: true},
     address: {type: String, required: true},
-    phone: {type: String},
+    stationNumber: { type: Number, unique: true },
     latitude: {
         type: Number,
         required: true,
@@ -19,6 +19,19 @@ const StationSchema = new mongoose.Schema({
     favorite: {type: Boolean, default: false},
     createdAt: {type: Number, default: Math.floor(Date.now() / 1000)}
 })
+
+StationSchema.pre("save", async function(next) {
+  // Generate unique order number
+  if (!this.stationNumber) {
+    let found;
+    do {
+      this.stationNumber = Math.floor(Math.random() * 90000) + 1000;
+      found = await this.constructor.findOne({ stationNumber: this.stationNumber });
+    } while (found);
+  }
+  next();
+});
+
 
 const Station = mongoose.model("station", StationSchema)
 

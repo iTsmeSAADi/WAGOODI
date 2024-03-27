@@ -267,6 +267,7 @@ const createOrder = async (req, res) => {
             error: { message: "Driver truck capacity is lower than the fuel value!" },
           });
         }
+        
       }
     }
     var fuels_with_stations = []
@@ -333,6 +334,23 @@ const createOrder = async (req, res) => {
         order: order,
       });
       console.log('OrderData', order)
+    }
+    else{
+      const notificationDesc = `Accept Or Reject Order ${order._id}`;
+      const notifiactionOrder = await Order.findById(order._id)
+      const specificStation = await Station.findById(stations[0].id)
+      const companyDriversNotification = await new Notification({
+        orderId: order._id,
+        type: 2,
+        orderData: notifiactionOrder,
+        description: notificationDesc,
+        stationId: specificStation,
+      }).save();   
+       // Emit notification to specific company driver
+  io.to(`/companyDriver-${driverId}`).emit("notification-message", {
+    notification: companyDriversNotification,
+    order: order,
+  });
     }
 
     const notificationsCreation = await Promise.all(
