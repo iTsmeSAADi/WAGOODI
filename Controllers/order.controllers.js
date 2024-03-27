@@ -251,25 +251,7 @@ const createOrder = async (req, res) => {
       from.longitude = station.longitude;
     
       // Check additional conditions if driverId is provided
-      if (driverId) {
-        const driverTruck = await TruckModel.findOne({ driverId });
-    
-        if (!driverTruck) {
-          return res.status(400).json({
-            success: false,
-            error: { message: "No truck found for the provided driverId!" },
-          });
-        }
-    
-        if (from.fuel_value > driverTruck.capacity) {
-          return res.status(400).json({
-            success: false,
-            error: { message: "Driver truck capacity is lower than the fuel value!" },
-          });
-        }
-        
-      }
-    }
+
     var fuels_with_stations = []
     const attachmentObj =
     fromOption === 0 ? [{ name: attachmentName, url: attachmentUrl }] : [];
@@ -336,6 +318,24 @@ const createOrder = async (req, res) => {
       console.log('OrderData', order)
     }
     else{
+      console.log('Entered Driver Condition')
+      const driverTruck = await TruckModel.findOne({ driverId });
+    
+        if (!driverTruck) {
+          return res.status(400).json({
+            success: false,
+            error: { message: "No truck found for the provided driverId!" },
+          });
+        }
+    
+        if (from.fuel_value > driverTruck.capacity) {
+          return res.status(400).json({
+            success: false,
+            error: { message: "Driver truck capacity is lower than the fuel value!" },
+          });
+        }
+        
+      }
       const notificationDesc = `Accept Or Reject Order ${order._id}`;
       const notifiactionOrder = await Order.findById(order._id)
       const specificStation = await Station.findById(stations[0].id)
@@ -347,10 +347,10 @@ const createOrder = async (req, res) => {
         stationId: specificStation,
       }).save();   
        // Emit notification to specific company driver
-  io.to(`/companyDriver-${driverId}`).emit("notification-message", {
-    notification: companyDriversNotification,
-    order: order,
-  });
+      io.to(`/companyDriver-${driverId}`).emit("notification-message", {
+        notification: companyDriversNotification,
+        order: order,
+      });
     }
 
     const notificationsCreation = await Promise.all(
