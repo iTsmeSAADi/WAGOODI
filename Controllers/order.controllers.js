@@ -361,14 +361,14 @@ const createOrder = async (req, res) => {
 
     let driverNotificationDesc = `${order._id} has been assigned for ${stations[0].id} Station! Order destination is ${stations[0].address} `;
     const driverNotification = await new Notification({
-      orderId: order._id,  // Corrected here: use order._id
+      orderId: order._id,  
       type: 2,
       description: driverNotificationDesc,
       stationId: stations[0].id,
       accountId: driverId,
     }).save();
     console.log('driver is', driverId)
-    io.to(`/driver-${driverId}`).emit("notification-message", driverNotification);
+    io.to(`/driver-${driverId}`).emit("notification-message", {notification: driverNotification, order: order});
     
   } catch (error) {
     console.log(error);
