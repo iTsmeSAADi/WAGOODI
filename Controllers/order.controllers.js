@@ -313,32 +313,32 @@ const createOrder = async (req, res) => {
     
     if (!driverId) {
       const notificationDesc = `Accept Or Reject Order ${order._id}`;
-      const notifiactionOrder = await Order.findById(order._id)
-      const specificStation = await Station.findById(stations[0].id)
+      const notifiactionOrder = await Order.findById(order._id);
+      const specificStation = await Station.findById(stations[0].id);
       const companyDriversNotification = await new Notification({
         orderId: order._id,
         type: 2,
         orderData: notifiactionOrder,
         description: notificationDesc,
         stationId: specificStation,
-      }).save();            
-
+      }).save();
+    
       console.log("IO ", io);
       console.log('order company id', companyId)
-
+    
       console.log('companyId', companyId)
-      
-
+    
+    
       console.log('OrderData', order)
-
-      io.to("/companyDriver-" + companyId,
-      `/company/drivers-${companyId}`
-  ).emit("notification-message", {notification: companyDriversNotification, order: order});
+    
+      const messageData = { notification: companyDriversNotification, order: order };
+    
+      io.to("/companyDriver-" + companyId).to(`/company/drivers-${companyId}`).emit("notification-message", messageData);
     }
-
+    
     const notificationsCreation = await Promise.all(
       stations.map(async ({ id: stationId, name: stationName }) => {
-        
+    
         const notificationDesc = `${order._id} has been generated for ${stationName} Station!`;
         const notification = await new Notification({
           orderId: order._id,  // Corrected here: use order._id
@@ -348,32 +348,31 @@ const createOrder = async (req, res) => {
           stationId,
           driverId,
         }).save();
-
+    
         io.to("/admin")
           .to(`/companyAdmin-${companyId}`)
           .to(`/orderManager-${companyId}`)
           .to(`/stationManager-${stationId}`)
-          .emit("notification-message", notification);
-
+          .emit("notification-message", { notification, order });
+    
         if (!driverId) return;
-
-
       })
     );
-
+    
     if (!driverId) return;
-
+    
     let driverNotificationDesc = `${order._id} has been assigned for ${stations[0].id} Station! Order destination is ${stations[0].address} `;
     const driverNotification = await new Notification({
-      orderId: order._id,  
+      orderId: order._id,
       type: 2,
       description: driverNotificationDesc,
       stationId: stations[0].id,
       accountId: driverId,
     }).save();
     console.log('driver is', driverId)
-
-    io.to(`/driver-${driverId}`).emit("notification-message", {notification: driverNotification, order: order});
+    
+    io.to(`/driver-${driverId}`).emit("notification-message", { notification: driverNotification, order: order });
+    
     
   } catch (error) {
     console.log(error);
