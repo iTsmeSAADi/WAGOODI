@@ -15,7 +15,7 @@ const OrderSchema = new mongoose.Schema({
       },
       name: String,
       pickedAt: { type: Number },
-      deliveryTime: { type: Number, default: null },
+      deliveryTime: { type: Number, default: null }, // Set deliveryTime default to null
       // Add latitude and longitude properties
       latitude: { type: Number },
       longitude: { type: Number },
@@ -89,7 +89,6 @@ OrderSchema.pre("save", async function(next) {
   }
   next();
 });
-
 
 const Order = mongoose.model("order", OrderSchema);
 
